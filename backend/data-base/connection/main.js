@@ -10,7 +10,7 @@ module.exports = (({logger, userData, req, res, isAuth, isRegistration}) => {
         user: 'batunov192',
         database: 'batunov192',
         password: 'ZkkpkMiv_2020',
-        charset: 'utf8'
+        charset: 'cp1251',
     });
 
 
@@ -21,8 +21,6 @@ module.exports = (({logger, userData, req, res, isAuth, isRegistration}) => {
 
             return logger(error.message);
         }
-
-        console.log(connection)
 
         const responseToFront = {
             message: null,
