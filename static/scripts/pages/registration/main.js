@@ -29,6 +29,8 @@
                 return;
             }
 
+
+
             regFormMessage.innerHTML = response.message;
         } catch (error) {
             console.log(error);
