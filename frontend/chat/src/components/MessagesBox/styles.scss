@@ -1,0 +1,34 @@
+.message-box {
+    width: 100%;
+
+    &__list {
+        display: flex;
+        flex-direction: column;
+        height: calc(100% - 40px);
+    }
+
+    &__message-item {
+        background: magenta;
+        padding: 10px;
+        border-radius: 16px;
+        width: min-content;
+
+        & + & {
+            margin-top: 15px;
+        }
+
+        &.rigth {
+            align-self: end;
+        }
+    }
+
+    &__input-wrapper {
+        height: 40px;
+    }
+
+    &__input {
+        width: 80%;
+        height: 100%;
+        border-radius: 12px;
+    }
+}
