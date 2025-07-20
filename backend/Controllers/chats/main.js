@@ -1,0 +1,138 @@
+const {v4: uuidv4} = require('uuid');
+const dbConnection = require('../../Data-base/connection/main');
+
+const createChat = ({res, chatsData}) => {
+    const {firstId, secondId} = chatsData;
+
+    const createChatCallback = ({connection, responseToFront}) => {
+        let id = uuidv4().replaceAll('-', '');
+
+        const sqlReqestSelectByIdString = `SELECT * FROM chats WHERE id = '${id}'`;
+
+        connection.query(sqlReqestSelectByIdString, (error, result) => {
+            if (error) {
+                connection.end();
+
+                return logger(error);
+            }
+
+            if (result.length) {
+                id = uuidv4().replaceAll('-', '');
+
+                console.log('Такой ID уже существует');
+            }
+
+            const createDate = new Intl.DateTimeFormat('en-GB', {
+                weekday: 'short',
+                year: 'numeric',
+                month: 'short',
+                day: 'numeric',
+                hour: 'numeric',
+                minute: 'numeric',
+                second: 'numeric',
+                timeZone: 'Europe/Moscow',
+                timeZoneName: 'short',
+            }).format(new Date());
+
+            const sqlRequestInsertString = `INSERT INTO chats (id, firstId, secondId, createDate) VALUES ('${id}', '${firstId}', '${secondId}', '${createDate}')`;
+
+            connection.execute(sqlRequestInsertString, (error) => {
+                if (error) {
+                    connection.end();
+
+                    return logger(error);
+                }
+
+                responseToFront.success = true;
+                responseToFront.message = 'Чат создан!';
+
+                res.send(responseToFront);
+                connection.end();
+            });
+        });
+    };
+
+    dbConnection({
+        logger,
+        chatsData,
+        res,
+        callback: createChatCallback,
+    });
+};
+
+const logger = (message) => {
+    console.log(`Create Chat Error: ${message}`);
+};
+
+const findAllChatsWithUser = ({userId, res}) => {
+    const findAllChatsCallback = ({connection, responseToFront}) => {
+
+        const sqlReqestSelectByIdString = `SELECT * FROM chats WHERE firstId = '${userId}' OR secondId = '${userId}'`;
+
+        connection.query(sqlReqestSelectByIdString, (error, result) => {
+            if (error) {
+                connection.end();
+
+                return logger(error);
+            }
+
+            if (!result.length) {
+                responseToFront.message = 'Чаты не найдены!';
+                responseToFront.success = false;
+
+                res.send({responseToFront});
+                connection.end();
+                return logger(responseToFront.message);
+            }
+
+            res.send(result);
+            res.end();
+        });
+    };
+
+    dbConnection({
+        logger,
+        userId,
+        res,
+        callback: findAllChatsCallback,
+    });
+};
+
+const findSingleChat = ({firstId, secondId, res}) => {
+    const findSingleChatCallback = ({connection, responseToFront}) => {
+
+        const sqlReqestSelectByIdString = `SELECT * FROM chats WHERE firstId = '${firstId}' AND secondId = '${secondId}'`;
+
+        connection.query(sqlReqestSelectByIdString, (error, result) => {
+            if (error) {
+                connection.end();
+
+                return logger(error);
+            }
+
+            if (!result.length) {
+                responseToFront.message = 'Чат не найден!';
+                responseToFront.success = false;
+
+                res.send({responseToFront});
+                connection.end();
+                return logger(responseToFront.message);
+            }
+
+            const [chat] = result;
+
+            res.send(chat);
+            res.end();
+        });
+    };
+
+    dbConnection({
+        logger,
+        firstId,
+        secondId,
+        res,
+        callback: findSingleChatCallback,
+    });
+};
+
+module.exports = {createChat, findAllChatsWithUser, findSingleChat};
