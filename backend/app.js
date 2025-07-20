@@ -7,6 +7,7 @@ const cors = require('cors');
 const port = process.env.PORT || 5000;
 const userRoute = require('./Routes/userRoute');
 const chatsRoute = require('./Routes/chatsRoute');
+const messagesRoute = require('./Routes/messagesRoute');
 
 app.use(cors({
     origin: '*',
@@ -27,6 +28,7 @@ app.use(session({
 app.use(express.json());
 app.use('/api/users', userRoute);
 app.use('/api/chats', chatsRoute);
+app.use('/api/messages', messagesRoute);
 
 app.get('/', (req, res) => {
     return res.end();

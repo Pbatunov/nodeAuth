@@ -1,9 +1,7 @@
 const {v4: uuidv4} = require('uuid');
 const dbConnection = require('../../Data-base/connection/main');
 
-const createChat = ({res, chatsData}) => {
-    const {firstId, secondId} = chatsData;
-
+const createChat = ({firstId, secondId, res, chatsData}) => {
     const createChatCallback = ({connection, responseToFront}) => {
         let id = uuidv4().replaceAll('-', '');
 
