@@ -11,7 +11,7 @@
         background: magenta;
         padding: 10px;
         border-radius: 16px;
-        width: min-content;
+        width: fit-content;
 
         & + & {
             margin-top: 15px;
@@ -23,12 +23,27 @@
     }
 
     &__input-wrapper {
+        display: flex;
         height: 40px;
+        gap: 20px;
     }
 
     &__input {
         width: 80%;
         height: 100%;
         border-radius: 12px;
+    }
+
+    &__warning {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: inherit;
+    }
+
+    &__send {
+        display: flex;
+        cursor: pointer;
+        color: magenta;
     }
 }

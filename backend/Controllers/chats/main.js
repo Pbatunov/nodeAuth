@@ -51,10 +51,7 @@ const createChat = ({firstId, secondId, res, chatsData}) => {
     };
 
     dbConnection({
-        logger,
-        chatsData,
-        res,
-        callback: createChatCallback,
+        logger, chatsData, res, callback: createChatCallback,
     });
 };
 
@@ -64,8 +61,24 @@ const logger = (message) => {
 
 const findAllChatsWithUser = ({userId, res}) => {
     const findAllChatsCallback = ({connection, responseToFront}) => {
-
-        const sqlReqestSelectByIdString = `SELECT * FROM chats WHERE firstId = '${userId}' OR secondId = '${userId}'`;
+        const sqlReqestSelectByIdString = `
+            SELECT 
+                c.id AS id,
+            CASE 
+                WHEN c.firstId <> '${userId}' THEN u1.name
+                ELSE u2.name
+            END AS companionName,
+            CASE 
+                WHEN c.firstId <> '${userId}' THEN c.firstId
+                ELSE c.secondId
+            END AS companionid,
+            c.createDate
+            FROM chats c
+            JOIN test_users u1 ON c.firstId = u1.id
+            JOIN test_users u2 ON c.secondId = u2.id
+            WHERE 
+            (c.firstId = '${userId}'
+            OR c.secondId = '${userId}')`;
 
         connection.query(sqlReqestSelectByIdString, (error, result) => {
             if (error) {
@@ -89,10 +102,7 @@ const findAllChatsWithUser = ({userId, res}) => {
     };
 
     dbConnection({
-        logger,
-        userId,
-        res,
-        callback: findAllChatsCallback,
+        logger, userId, res, callback: findAllChatsCallback,
     });
 };
 
@@ -125,11 +135,7 @@ const findSingleChat = ({firstId, secondId, res}) => {
     };
 
     dbConnection({
-        logger,
-        firstId,
-        secondId,
-        res,
-        callback: findSingleChatCallback,
+        logger, firstId, secondId, res, callback: findSingleChatCallback,
     });
 };
 

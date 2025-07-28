@@ -4,11 +4,13 @@
     font-size: 1em;
     color: white;
     column-gap: 10px;
-    padding: 4px;
+    padding: 5px;
     border-radius: 8px;
 
     &.active {
-        background-color: cadetblue;
+        transition: .2s all ease;
+        background-color: darkcyan;
+        cursor: default;
     }
 
     & + & {
@@ -43,7 +45,7 @@
         position: absolute;
         top: 10px;
         right: 15px;
-        row-gap: 5px;
+        row-gap: 10px;
     }
 
     &__notification {
@@ -56,5 +58,13 @@
         justify-content: center;
         align-items: center;
         color: white;
+    }
+}
+
+
+@media (hover: hover) and (pointer: fine) {
+    .chat-list-item:not(.active):hover {
+        background-color: cadetblue;
+
     }
 }

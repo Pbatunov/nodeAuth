@@ -9,3 +9,12 @@ a {
     text-decoration: none;
     color: unset;
 }
+
+button {
+    border-radius: 0;
+    background-color: unset;
+    border: none;
+    width: 100%;
+    text-align: unset;
+    cursor: pointer;
+}

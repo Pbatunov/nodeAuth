@@ -67,7 +67,7 @@ const createMessage = ({chatId, senderId, message, res}) => {
 const findChatMessages = ({chatId, res}) => {
     const findChatMessagesCallback = ({connection, responseToFront}) => {
 
-        const sqlReqestSelectByIdString = `SELECT * FROM chat_messages WHERE chatId = '${chatId}'`;
+        const sqlReqestSelectByIdString = `SELECT * FROM chat_messages WHERE chatId = '${chatId}' ORDER BY createDate ASC`;
 
         connection.query(sqlReqestSelectByIdString, (error, result) => {
             if (error) {
@@ -77,7 +77,7 @@ const findChatMessages = ({chatId, res}) => {
             }
 
             if (!result.length) {
-                responseToFront.message = 'Сообщения не найдены!';
+                responseToFront.message = 'В этом чате пока нет ни одного сообщения!';
                 responseToFront.success = false;
 
                 res.send({responseToFront});
