@@ -10,9 +10,9 @@ router.post('/', (req, res) => {
 
     const {chatId, senderId, message} = req.body;
 
-    if (!chatId && !senderId && !message) {
-        res.sendStatus(400).send('Ошибка при создании сообщения!');
-        return req.end();
+    if (!chatId || !senderId || !message) {
+        res.sendStatus(400);
+        return res.end();
     }
 
     createMessage({chatId, senderId, message, res});
@@ -27,7 +27,7 @@ router.get('/:chatId', (req, res) => {
     const {chatId} = req.params;
 
     if (!chatId) {
-        res.sendStatus(400).send('chatId не найден!');
+        res.sendStatus(400);
         return req.end();
     }
 

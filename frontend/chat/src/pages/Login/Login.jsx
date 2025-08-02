@@ -20,7 +20,7 @@ export const Login = () => {
                     e.preventDefault()
 
                     const data = await postRequest({
-                        url: 'http://localhost:5000/api/users/auth',
+                        url: 'users/auth',
                         data: formData,
                     })
 

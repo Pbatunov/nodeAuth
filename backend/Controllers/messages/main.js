@@ -5,7 +5,27 @@ const logger = ({status, message}) => {
     console.log(`${status}: ${message}`);
 };
 
+const formatDate = ({currentDate}) => {
+    const dateString = new Intl.DateTimeFormat('RU', {
+        year: 'numeric',
+        month: 'numeric',
+        day: 'numeric',
+        hour: 'numeric',
+        minute: 'numeric',
+        second: 'numeric',
+        timeZone: 'Europe/Moscow',
+    }).format(currentDate);
+
+    const dateArray = dateString.split(', ');
+    const [date, time] = dateArray;
+    const [day, month, year] = date.split('.');
+
+    return `${year}-${month}-${day} ${time}`;
+};
+
+
 const createMessage = ({chatId, senderId, message, res}) => {
+    console.log('create message');
     const createMessageCallback = ({connection, responseToFront}) => {
         let id = uuidv4().replaceAll('-', '');
 
@@ -24,17 +44,7 @@ const createMessage = ({chatId, senderId, message, res}) => {
                 console.log('Такой ID уже существует');
             }
 
-            const createDate = new Intl.DateTimeFormat('en-GB', {
-                weekday: 'short',
-                year: 'numeric',
-                month: 'short',
-                day: 'numeric',
-                hour: 'numeric',
-                minute: 'numeric',
-                second: 'numeric',
-                timeZone: 'Europe/Moscow',
-                timeZoneName: 'short',
-            }).format(new Date());
+            const createDate = formatDate(new Date());
 
             const sqlRequestInsertString = `INSERT INTO chat_messages (id, chatId, senderId, message ,createDate) VALUES ('${id}', '${chatId}', '${senderId}', '${message}', '${createDate}')`;
 

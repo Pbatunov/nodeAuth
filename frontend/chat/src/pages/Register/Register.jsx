@@ -19,7 +19,7 @@ export const Register = () => {
                     e.preventDefault()
 
                     const data = await postRequest({
-                        url: 'http://localhost:5000/api/users/registration',
+                        url: 'users/registration',
                         data: formData,
                     })
 

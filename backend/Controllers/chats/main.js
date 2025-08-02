@@ -63,22 +63,35 @@ const findAllChatsWithUser = ({userId, res}) => {
     const findAllChatsCallback = ({connection, responseToFront}) => {
         const sqlReqestSelectByIdString = `
             SELECT 
-                c.id AS id,
-            CASE 
-                WHEN c.firstId <> '${userId}' THEN u1.name
-                ELSE u2.name
-            END AS companionName,
-            CASE 
-                WHEN c.firstId <> '${userId}' THEN c.firstId
-                ELSE c.secondId
-            END AS companionid,
-            c.createDate
+             c.id AS id,
+             CASE 
+             WHEN c.firstId <> '${userId}' THEN u1.name
+             ELSE u2.name
+             END AS companionName,
+             CASE 
+             WHEN c.firstId <> '${userId}' THEN c.firstId
+             ELSE c.secondId
+             END AS companionId,
+             c.createDate,
+             m.message AS lastMessage,
+             m.createDate AS messageDate
             FROM chats c
             JOIN test_users u1 ON c.firstId = u1.id
             JOIN test_users u2 ON c.secondId = u2.id
+            LEFT JOIN (
+             SELECT 
+             chatId,
+             message,
+             createDate,
+             IF(@chatId = chatId, @rn := @rn + 1, @rn := 1) AS rn,
+             @chatId := chatId
+             FROM chat_messages,
+             (SELECT @chatId := NULL, @rn := 0) vars
+             ORDER BY chatId, createDate DESC
+            ) m ON c.id = m.chatId AND m.rn = 1
             WHERE 
-            (c.firstId = '${userId}'
-            OR c.secondId = '${userId}')`;
+             (c.firstId = '${userId}'
+             OR c.secondId = '${userId}')`;
 
         connection.query(sqlReqestSelectByIdString, (error, result) => {
             if (error) {

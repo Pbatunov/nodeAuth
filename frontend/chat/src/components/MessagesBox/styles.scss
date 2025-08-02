@@ -17,8 +17,10 @@
             margin-top: 15px;
         }
 
-        &.rigth {
+        &.right {
             align-self: end;
+            background: #FFFFFF;
+            color: magenta;
         }
     }
 
@@ -29,9 +31,26 @@
     }
 
     &__input {
-        width: 80%;
+        font-size: 20px;
+        border: none;
+        border-bottom: 1px solid magenta;
+        padding: 10px 0;
+        background-color: transparent;
+        color: #FFF;
+        width: 100%;
         height: 100%;
-        border-radius: 12px;
+
+        &:focus {
+            background-color: transparent !important;
+            border: none;
+            outline: none;
+            border-bottom: 1px solid lightgreen;
+            color: lightgreen;
+
+            &::placeholder {
+                color: lightgreen;
+            }
+        }
     }
 
     &__warning {
@@ -45,5 +64,6 @@
         display: flex;
         cursor: pointer;
         color: magenta;
+        width: auto;
     }
 }

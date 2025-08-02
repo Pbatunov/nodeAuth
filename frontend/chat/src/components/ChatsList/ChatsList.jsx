@@ -22,6 +22,7 @@ export const ChatsList = () => {
             {chatsList.map((chat, index) => {
                 return (
                         <ChatListItem
+                            key={chat.id}
                             chat={chat}
                             index={index}
                             selectedIndex={selectedIndex}
