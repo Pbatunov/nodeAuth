@@ -23,10 +23,8 @@ const formatDate = ({currentDate}) => {
     return `${year}-${month}-${day} ${time}`;
 };
 
-
 const createMessage = ({chatId, senderId, message, res}) => {
-    console.log('create message');
-    const createMessageCallback = ({connection, responseToFront}) => {
+    const createMessageCallback = ({connection}) => {
         let id = uuidv4().replaceAll('-', '');
 
         const sqlReqestSelectByIdString = `SELECT * FROM chat_messages WHERE id = '${id}'`;
@@ -55,10 +53,7 @@ const createMessage = ({chatId, senderId, message, res}) => {
                     return logger({status: 'Ошибка соединения', error});
                 }
 
-                responseToFront.success = true;
-                responseToFront.message = 'Сообщение создано!';
-
-                res.send(responseToFront);
+                findChatMessages({chatId, res});
                 connection.end();
             });
         });

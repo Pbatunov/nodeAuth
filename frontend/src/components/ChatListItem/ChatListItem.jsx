@@ -1,8 +1,20 @@
 import './styles.scss';
+import {useContext} from 'react';
+import {ChatContext} from '../../context/ChatContext';
 
 export const ChatListItem = ({chat, selectedIndex, index, handleClick}) => {
-    const {id, companionName, lastMessage, messageDate} = chat;
+    const {
+        id,
+        companionName,
+        companionId,
+        lastMessage,
+        messageDate,
+    } = chat;
 
+    const {onlineUsers} = useContext(ChatContext);
+
+
+    const isOnline = onlineUsers?.some((user) => user.userId === companionId);
     const formatDate = (date) => {
         return new Intl.DateTimeFormat('ru', {
             month: 'numeric',
@@ -17,11 +29,12 @@ export const ChatListItem = ({chat, selectedIndex, index, handleClick}) => {
             key={id}
             className={`chat-list-item ${index === selectedIndex ? 'active' : ''}`}
             onClick={() => {
-                handleClick({index, id});
+                handleClick({index, chat});
             }}
         >
             <div className='chat-list-item__avatar'>
                 <img src='frontend/src/components/ChatListItem/ChatListItem' alt=''/>
+                {isOnline ? <div className='chat-list-item__online'></div> : ''}
             </div>
             <div className='chat-list-item__text'>
                 <div className='chat-list-item__name'>{companionName}</div>

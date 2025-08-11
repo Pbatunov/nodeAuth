@@ -1,12 +1,12 @@
 import './styles.scss';
 import {useContext, useState} from 'react';
 import {ChatContext} from '../../context/ChatContext';
-import {ReactComponent as SendIcon} from './images/send-icon.svg';
 import {AuthContext} from '../../context/AuthContext';
+import {ReactComponent as SendIcon} from './images/send-icon.svg';
 
 export const MessageBox = () => {
     const [currentMessageText, setCurrentMessageText] = useState('');
-    const {currentChatId, createMessage, messagesList, messagesWarning} = useContext(ChatContext);
+    const {currentChat, createMessage, messagesList, messagesWarning} = useContext(ChatContext);
     const {userData} = useContext(AuthContext);
     const {id: senderId} = userData;
 
@@ -22,7 +22,6 @@ export const MessageBox = () => {
                     messagesList?.map((item) => {
 
                         const {id, senderId, message} = item;
-                        console.log({senderId, userId: userData.id});
                         return <div key={id}
                             className={`message-box__message-item ${senderId === userData.id ? 'right' : ''}`}>{message}</div>;
                     })}
@@ -48,10 +47,12 @@ export const MessageBox = () => {
                     onClick={(event) => {
                         createMessage({
                             event,
-                            chatId: currentChatId,
+                            chatId: currentChat.id,
                             senderId,
                             message: currentMessageText,
                         });
+
+                        setCurrentMessageText('');
                     }}
                 >
                     <SendIcon/>

@@ -6,9 +6,9 @@ import {ChatContext} from '../../context/ChatContext';
 export const ChatsList = () => {
     const [selectedIndex, setSelectedIndex] = useState(null);
 
-    const handleClick = ({index, id}) => {
+    const handleClick = ({index, chat}) => {
         setSelectedIndex(index);
-        getChatMessages({id});
+        getChatMessages({chat});
     };
 
     const {chatsList, getChatMessages} = useContext(ChatContext);

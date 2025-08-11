@@ -1,5 +1,6 @@
 require('dotenv').config();
 const express = require('express');
+const {Server} = require('socket.io');
 const app = express();
 const session = require('express-session');
 const cors = require('cors');
@@ -34,6 +35,50 @@ app.get('/', (req, res) => {
     return res.end();
 });
 
-app.listen(port, () => {
+const expressServer = app.listen(port, () => {
     console.log(`http://localhost:${port}`);
+});
+
+const io = new Server(expressServer, {
+    cors: {
+        origin: 'http://localhost:3000',
+    },
+});
+
+let onlineUsers = [];
+
+io.on('connection', (socket) => {
+    socket.on('userConnect', (userId) => {
+
+        const hasOnlineUsers = onlineUsers.some((user) => user.userId === userId);
+
+        if (!hasOnlineUsers) {
+            onlineUsers.push({
+                userId,
+                socketId: socket.id,
+            });
+        }
+
+        console.log({onlineUsers});
+
+        io.emit('getOnlineUsers', onlineUsers);
+    });
+
+    socket.on('sendMessage', (message) => {
+
+        console.log({message});
+
+        const user = onlineUsers.find((user) => user.userId === message.companionId);
+
+        if (user) {
+            io.to(user.socketId).emit('getMessage', message);
+        }
+
+    });
+
+    socket.on('disconnect', () => {
+        onlineUsers = onlineUsers.filter((user) => user.socketId !== socket.id);
+        io.emit('getOnlineUsers', onlineUsers);
+
+    });
 });

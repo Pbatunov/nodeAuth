@@ -43,6 +43,7 @@
     "php-node": "^0.0.2",
     "rbc-twig-browserify-transform": "^0.0.3",
     "rbc-twig-compiler": "^0.0.6",
+    "socket.io": "^4.8.1",
     "stream-combiner2": "^1.1.1",
     "through2": "^2.0.5",
     "twig": "^1.15.4",
