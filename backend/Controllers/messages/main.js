@@ -92,6 +92,7 @@ const findChatMessages = ({chatId, res}) => {
 
             res.send(result);
             res.end();
+            connection.end();
         });
     };
 
@@ -100,6 +101,7 @@ const findChatMessages = ({chatId, res}) => {
         chatId,
         res,
         callback: findChatMessagesCallback,
+        from: 'findChatMessagesCallback',
     });
 };
 

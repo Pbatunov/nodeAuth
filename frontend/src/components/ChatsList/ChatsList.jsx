@@ -7,6 +7,10 @@ export const ChatsList = () => {
     const [selectedIndex, setSelectedIndex] = useState(null);
 
     const handleClick = ({index, chat}) => {
+        if (selectedIndex === index) {
+            return;
+        }
+
         setSelectedIndex(index);
         getChatMessages({chat});
     };
@@ -18,7 +22,7 @@ export const ChatsList = () => {
     }
 
     return (
-        <div className='chats-list'>
+        <div className='chats-list' >
             {chatsList.map((chat, index) => {
                 return (
                     <ChatListItem

@@ -11,7 +11,7 @@ const createChat = ({firstId, secondId, res, chatsData}) => {
             if (error) {
                 connection.end();
 
-                return logger(error);
+                return logger({statusText: 'createChatError', messageText: error});
             }
 
             if (result.length) {
@@ -38,7 +38,7 @@ const createChat = ({firstId, secondId, res, chatsData}) => {
                 if (error) {
                     connection.end();
 
-                    return logger(error);
+                    return logger({statusText: 'createChatError2', messageText: error});
                 }
 
                 responseToFront.success = true;
@@ -51,12 +51,12 @@ const createChat = ({firstId, secondId, res, chatsData}) => {
     };
 
     dbConnection({
-        logger, chatsData, res, callback: createChatCallback,
+        logger, chatsData, res, callback: createChatCallback, from: 'createChat',
     });
 };
 
-const logger = (message) => {
-    console.log(`Create Chat Error: ${message}`);
+const logger = ({statusText, messageText}) => {
+    console.log(`${statusText}: ${messageText}`);
 };
 
 const findAllChatsWithUser = ({userId, res}) => {
@@ -97,7 +97,7 @@ const findAllChatsWithUser = ({userId, res}) => {
             if (error) {
                 connection.end();
 
-                return logger(error);
+                return logger({statusText: 'findAllChats', messageText: error});
             }
 
             if (!result.length) {
@@ -106,7 +106,7 @@ const findAllChatsWithUser = ({userId, res}) => {
 
                 res.send({responseToFront});
                 connection.end();
-                return logger(responseToFront.message);
+                return logger({statusText: 'findAllChats2', messageText: responseToFront.message});
             }
 
             res.send(result);
@@ -115,7 +115,11 @@ const findAllChatsWithUser = ({userId, res}) => {
     };
 
     dbConnection({
-        logger, userId, res, callback: findAllChatsCallback,
+        logger,
+        userId,
+        res,
+        callback: findAllChatsCallback,
+        from: 'findAllChatsWithUser',
     });
 };
 
@@ -128,7 +132,7 @@ const findSingleChat = ({firstId, secondId, res}) => {
             if (error) {
                 connection.end();
 
-                return logger(error);
+                return logger({statusText: 'findSingleChatError', messageText: error});
             }
 
             if (!result.length) {
@@ -137,7 +141,7 @@ const findSingleChat = ({firstId, secondId, res}) => {
 
                 res.send({responseToFront});
                 connection.end();
-                return logger(responseToFront.message);
+                return logger({statusText: 'findSingleChatError2', messageText: responseToFront.message});
             }
 
             const [chat] = result;
@@ -148,7 +152,7 @@ const findSingleChat = ({firstId, secondId, res}) => {
     };
 
     dbConnection({
-        logger, firstId, secondId, res, callback: findSingleChatCallback,
+        logger, firstId, secondId, res, callback: findSingleChatCallback, from: 'findSingleChat',
     });
 };
 

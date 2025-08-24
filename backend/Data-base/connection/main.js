@@ -1,4 +1,4 @@
-module.exports = (({logger, callback}) => {
+module.exports = (({from, logger, callback}) => {
     const mysql = require('mysql2');
 
     const connection = mysql.createConnection({
@@ -11,10 +11,11 @@ module.exports = (({logger, callback}) => {
 
     connection.connect((error) => {
         if (error) {
-            console.log(error);
+            console.log(`${from}: ${error}`);
             connection.end();
 
-            return logger(error.message);
+
+            return logger({stausText: from, messageText: error.message});
         }
 
         const responseToFront = {

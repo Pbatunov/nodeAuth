@@ -1,5 +1,5 @@
 import './styles.scss';
-import {useContext, useState} from 'react';
+import {useContext, useRef, useState, useEffect} from 'react';
 import {ChatContext} from '../../context/ChatContext';
 import {AuthContext} from '../../context/AuthContext';
 import {ReactComponent as SendIcon} from './images/send-icon.svg';
@@ -8,7 +8,15 @@ export const MessageBox = () => {
     const [currentMessageText, setCurrentMessageText] = useState('');
     const {currentChat, createMessage, messagesList, messagesWarning} = useContext(ChatContext);
     const {userData} = useContext(AuthContext);
+    const messagesListRef = useRef(null);
     const {id: senderId} = userData;
+
+
+    useEffect(() => {
+        if (messagesListRef?.current) {
+            messagesListRef.current.scrollTo(0, 9999999);
+        }
+    });
 
     if (!messagesList && !messagesWarning) {
         return null;
@@ -16,7 +24,7 @@ export const MessageBox = () => {
 
     return (
         <div className='message-box'>
-            <div className='message-box__list'>
+            <div className='message-box__list' ref={messagesListRef}>
                 {!messagesList?.length ?
                     <div className='message-box__warning'>{messagesWarning}</div> :
                     messagesList?.map((item) => {

@@ -21,15 +21,15 @@ export const ChatContextProvider = ({children, user}) => {
 
             setChatsList(chatsList);
 
-            if (!messagesList?.length) {
+            /*if (!messagesList?.length) {
                 return null;
-            }
+            }*/
         };
 
         if (user) {
             getChatsList();
         }
-    }, [messagesList, user]
+    }, [user, messagesList]
     );
 
     const getChatMessages = async ({chat}) => {
@@ -54,6 +54,7 @@ export const ChatContextProvider = ({children, user}) => {
         const {companionId} = currentChat;
 
         setNewMessage({...response[response?.length - 1], companionId});
+        setMessagesList(response);
     };
 
     useEffect(() => {
@@ -86,7 +87,7 @@ export const ChatContextProvider = ({children, user}) => {
         return () => {
             socket.off('getOnlineUsers');
         };
-    }, [socket]);
+    }, [socket, user]);
 
     useEffect(() => {
         if (!socket) {
@@ -99,7 +100,7 @@ export const ChatContextProvider = ({children, user}) => {
 
         socket.emit('sendMessage', {...newMessage});
 
-    }, [newMessage]);
+    }, [newMessage, socket, user]);
 
     useEffect(() => {
         if (!socket) {
@@ -111,25 +112,24 @@ export const ChatContextProvider = ({children, user}) => {
         }
 
         socket.on('getMessage', (message) => {
-
-            if (message.chatId !== currentChat.id) {
+            console.log(chatsList);
+            if (message.chatId !== currentChat?.id) {
                 return null;
             }
 
-            console.log({message});
+            //console.log({message});
 
             setMessagesList((prev) => {
-                console.log(prev);
+                //console.log(prev);
                 return prev.length ? [...prev, message] : [message];
             });
-
         });
 
         return () => {
             socket.off('getMessage');
         };
 
-    }, [socket, currentChat]);
+    }, [socket, currentChat, user, chatsList]);
 
 
     return (
