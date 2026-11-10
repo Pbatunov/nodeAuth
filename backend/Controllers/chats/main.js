@@ -156,10 +156,10 @@ const findSingleChat = ({firstId, secondId, res}) => {
     });
 };
 
-const deleteChat = ({chatId, userId, res}) => {
+const deleteChat = ({chatId, userId, res, notifyUser}) => {
     const deleteChatCallback = ({connection}) => {
         // Удалять может только участник чата.
-        const checkSql = 'SELECT id FROM chats WHERE id = ? AND (firstId = ? OR secondId = ?)';
+        const checkSql = 'SELECT id, firstId, secondId FROM chats WHERE id = ? AND (firstId = ? OR secondId = ?)';
 
         connection.execute(checkSql, [chatId, userId, userId], (error, result) => {
             if (error) {
@@ -193,6 +193,11 @@ const deleteChat = ({chatId, userId, res}) => {
                     }
 
                     res.send({success: true, message: 'Чат удалён!'});
+
+                    // Сообщаем собеседнику, что чат удалён, если он онлайн.
+                    const [chat] = result;
+                    const companionId = chat.firstId === userId ? chat.secondId : chat.firstId;
+                    notifyUser?.(companionId, 'chatDeleted', {chatId});
                 });
             });
         });

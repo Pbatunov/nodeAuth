@@ -82,3 +82,12 @@ io.on('connection', (socket) => {
 
     });
 });
+
+// Отправляет событие пользователю, если он сейчас онлайн. Используется HTTP-маршрутами.
+app.locals.notifyUser = (userId, event, payload) => {
+    const user = onlineUsers.find((item) => item.userId === userId);
+
+    if (user) {
+        io.to(user.socketId).emit(event, payload);
+    }
+};

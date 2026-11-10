@@ -58,7 +58,7 @@ router.delete('/:chatId', (req, res) => {
         return res.sendStatus(400);
     }
 
-    deleteChat({chatId, userId, res});
+    deleteChat({chatId, userId, res, notifyUser: req.app.locals.notifyUser});
 });
 
 module.exports = router;

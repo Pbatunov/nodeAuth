@@ -199,6 +199,15 @@ export const ChatContextProvider = ({children, user}) => {
                     : chat
             )));
 
+            // Чата ещё нет в списке (собеседник начал диалог) — подгружаем список с сервера.
+            if (chatsList && !chatsList.some((chat) => chat.id === message.chatId)) {
+                getRequest({url: `chats/${user.id}`}).then((list) => {
+                    if (Array.isArray(list)) {
+                        setChatsList(list);
+                    }
+                });
+            }
+
             if (message.chatId !== currentChat?.id) {
                 setUnreadCounts((prev) => ({
                     ...prev,
@@ -215,11 +224,23 @@ export const ChatContextProvider = ({children, user}) => {
             refreshChatMessages({chatId: message.chatId});
         });
 
+        // Собеседник удалил чат: убираем его у себя и очищаем окно, если оно открыто.
+        socket.on('chatDeleted', ({chatId}) => {
+            setChatsList((prev) => prev?.filter((chat) => chat.id !== chatId));
+
+            if (currentChat?.id === chatId) {
+                setCurrentChat(null);
+                setMessagesList(null);
+                setMessagesWarning(null);
+            }
+        });
+
         return () => {
             socket.off('getMessage');
+            socket.off('chatDeleted');
         };
 
-    }, [socket, currentChat, user]);
+    }, [socket, currentChat, user, chatsList]);
 
 
     return (
