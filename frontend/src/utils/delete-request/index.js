@@ -1,5 +1,7 @@
+import {API_URL} from '../../config';
+
 export const deleteRequest = async ({url, data}) => {
-    const baseUrl = 'http://localhost:5000/api/';
+    const baseUrl = `${API_URL}/api/`;
 
     try {
         const response = await fetch(`${baseUrl}${url}`, {

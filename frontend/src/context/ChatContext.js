@@ -3,6 +3,7 @@ import {getRequest} from '../utils/get-request';
 import {postRequest} from '../utils/post-request';
 import {deleteRequest} from '../utils/delete-request';
 import {io} from 'socket.io-client';
+import {API_URL} from '../config';
 
 export const ChatContext = createContext();
 
@@ -138,7 +139,7 @@ export const ChatContextProvider = ({children, user}) => {
     };
 
     useEffect(() => {
-        const newSocket = io('http://localhost:5000');
+        const newSocket = io(API_URL);
         setSocket(newSocket);
 
         return () => {

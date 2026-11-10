@@ -41,7 +41,8 @@ const expressServer = app.listen(port, () => {
 
 const io = new Server(expressServer, {
     cors: {
-        origin: 'http://localhost:3000',
+        // Разрешённый источник фронтенда. По умолчанию — любой (для разработки в локальной сети).
+        origin: process.env.CLIENT_ORIGIN || '*',
     },
 });
 
