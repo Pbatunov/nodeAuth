@@ -1,40 +1,49 @@
 import './styles.scss';
 import {ChatListItem} from '../ChatListItem';
+import {NewChat} from '../NewChat';
 import {useContext, useState} from 'react';
 import {ChatContext} from '../../context/ChatContext';
 
 export const ChatsList = () => {
-    const [selectedIndex, setSelectedIndex] = useState(null);
+    const [isNewChatOpen, setIsNewChatOpen] = useState(false);
 
-    const handleClick = ({index, chat}) => {
-        if (selectedIndex === index) {
-            return;
-        }
+    const {chatsList, currentChat, getChatMessages, unreadCounts} = useContext(ChatContext);
 
-        setSelectedIndex(index);
-        getChatMessages({chat});
-    };
-
-    const {chatsList, getChatMessages} = useContext(ChatContext);
-
-    if (!chatsList?.length) {
+    if (!chatsList) {
         return null;
     }
 
+    const handleClick = ({chat}) => {
+        if (currentChat?.id === chat.id) {
+            return;
+        }
+
+        getChatMessages({chat});
+    };
+
     return (
-        <div className='chats-list' >
-            {chatsList.map((chat, index) => {
+        <div className='chats-list'>
+            <button
+                type='button'
+                className='chats-list__new-chat'
+                onClick={() => setIsNewChatOpen((prev) => !prev)}
+            >
+                {isNewChatOpen ? 'Отмена' : '+ Новый чат'}
+            </button>
+
+            {isNewChatOpen && <NewChat onClose={() => setIsNewChatOpen(false)}/>}
+
+            {chatsList.map((chat) => {
                 return (
                     <ChatListItem
                         key={chat.id}
                         chat={chat}
-                        index={index}
-                        selectedIndex={selectedIndex}
+                        isActive={chat.id === currentChat?.id}
+                        unreadCount={unreadCounts?.[chat.id] || 0}
                         handleClick={handleClick}
                     />
                 );
-            }
-            )}
+            })}
         </div>
     );
 };

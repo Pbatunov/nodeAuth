@@ -3,6 +3,11 @@ const urlencodedParser = express.urlencoded({extended: true});
 const router = express.Router();
 const registration = require('../Controllers/registration/main');
 const auth = require('../Controllers/auth/main');
+const {findAllUsers} = require('../Controllers/users/main');
+
+router.get('/', (req, res) => {
+    findAllUsers({res});
+});
 
 router.post('/registration', urlencodedParser, (req, res) => {
     if (!req.body) {

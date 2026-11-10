@@ -13,13 +13,16 @@ export const ChatContextProvider = ({children, user}) => {
     const [currentChat, setCurrentChat] = useState(null);
     const [socket, setSocket] = useState(null);
     const [onlineUsers, setOnlineUsers] = useState(null);
+    // Непрочитанные сообщения по chatId. Хранятся в памяти текущей сессии.
+    const [unreadCounts, setUnreadCounts] = useState({});
 
     useEffect(() => {
         const getChatsList = async () => {
             const {id: userId} = user;
             const chatsList = await getRequest({url: `chats/${userId}`});
 
-            setChatsList(chatsList);
+            // Сервер может вернуть ошибку или объект вместо массива — тогда список пустой.
+            setChatsList(Array.isArray(chatsList) ? chatsList : []);
 
             /*if (!messagesList?.length) {
                 return null;
@@ -34,9 +37,63 @@ export const ChatContextProvider = ({children, user}) => {
 
     const getChatMessages = async ({chat}) => {
         const chatMessagesList = await getRequest({url: `messages/${chat.id}`});
-        setMessagesList(chatMessagesList);
-        setMessagesWarning(chatMessagesList?.responseToFront?.message);
+
+        if (Array.isArray(chatMessagesList)) {
+            setMessagesList(chatMessagesList);
+            setMessagesWarning(null);
+        } else if (chatMessagesList?.responseToFront) {
+            // Пустой чат: сервер присылает объект с сообщением, а не массив.
+            setMessagesList([]);
+            setMessagesWarning(chatMessagesList.responseToFront.message);
+        } else {
+            // Ошибка запроса (например, 503 при недоступной БД).
+            setMessagesList([]);
+            setMessagesWarning(chatMessagesList?.message || 'Не удалось загрузить сообщения');
+        }
+
         setCurrentChat(chat);
+        setUnreadCounts((prev) => ({...prev, [chat.id]: 0}));
+    };
+
+    // Тихо обновляет сообщения открытого чата. При ошибке список не трогаем.
+    const refreshChatMessages = async ({chatId}) => {
+        const chatMessagesList = await getRequest({url: `messages/${chatId}`});
+
+        if (Array.isArray(chatMessagesList)) {
+            setMessagesList(chatMessagesList);
+        }
+    };
+
+    // Открывает личный чат с пользователем: если чат уже есть — открывает его, иначе создаёт.
+    const startChat = async ({companion}) => {
+        const existingChat = chatsList?.find((chat) => chat.companionId === companion.id);
+
+        if (existingChat) {
+            return getChatMessages({chat: existingChat});
+        }
+
+        const response = await postRequest({
+            url: 'chats',
+            data: {firstId: user.id, secondId: companion.id},
+        });
+
+        if (!response?.success) {
+            return response;
+        }
+
+        const updatedChatsList = await getRequest({url: `chats/${user.id}`});
+
+        if (!Array.isArray(updatedChatsList)) {
+            return;
+        }
+
+        setChatsList(updatedChatsList);
+
+        const newChat = updatedChatsList.find((chat) => chat.companionId === companion.id);
+
+        if (newChat) {
+            await getChatMessages({chat: newChat});
+        }
     };
 
     const createMessage = async ({event, chatId, senderId, message}) => {
@@ -112,24 +169,34 @@ export const ChatContextProvider = ({children, user}) => {
         }
 
         socket.on('getMessage', (message) => {
-            console.log(chatsList);
+            // Обновляем последнее сообщение в списке чатов, даже если чат не открыт.
+            setChatsList((prev) => prev?.map((chat) => (
+                chat.id === message.chatId
+                    ? {...chat, lastMessage: message.message, messageDate: message.createDate}
+                    : chat
+            )));
+
             if (message.chatId !== currentChat?.id) {
-                return null;
+                setUnreadCounts((prev) => ({
+                    ...prev,
+                    [message.chatId]: (prev[message.chatId] || 0) + 1,
+                }));
+                return;
             }
 
-            //console.log({message});
-
+            // Сразу показываем сообщение, затем сверяем список с БД.
             setMessagesList((prev) => {
-                //console.log(prev);
-                return prev.length ? [...prev, message] : [message];
+                const list = Array.isArray(prev) ? prev : [];
+                return list.some((item) => item.id === message.id) ? list : [...list, message];
             });
+            refreshChatMessages({chatId: message.chatId});
         });
 
         return () => {
             socket.off('getMessage');
         };
 
-    }, [socket, currentChat, user, chatsList]);
+    }, [socket, currentChat, user]);
 
 
     return (
@@ -139,12 +206,14 @@ export const ChatContextProvider = ({children, user}) => {
             setChatsList,
             createMessage,
             getChatMessages,
+            startChat,
             messagesList,
             messagesWarning,
             setMessagesList,
             setMessagesWarning,
             socket,
             onlineUsers,
+            unreadCounts,
         }}>
             {children}
         </ChatContext.Provider>

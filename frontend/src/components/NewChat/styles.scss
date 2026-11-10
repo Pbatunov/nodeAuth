@@ -1,0 +1,45 @@
+.new-chat {
+    display: flex;
+    flex-direction: column;
+    row-gap: 10px;
+    margin-bottom: 15px;
+    padding: 10px;
+    border: 1px solid magenta;
+    border-radius: 8px;
+    font-size: 0.9em;
+
+    &__search {
+        padding: 6px 8px;
+        border: none;
+        border-radius: 6px;
+    }
+
+    &__users {
+        display: flex;
+        flex-direction: column;
+        row-gap: 6px;
+        max-height: 200px;
+        overflow: auto;
+        scrollbar-width: thin;
+        scrollbar-color: magenta transparent;
+    }
+
+    &__user {
+        padding: 6px 8px;
+        border: none;
+        border-radius: 6px;
+        background: transparent;
+        color: white;
+        text-align: left;
+        cursor: pointer;
+
+        &:hover {
+            background-color: darkcyan;
+        }
+    }
+
+    &__empty,
+    &__message {
+        color: #ffb3b3;
+    }
+}

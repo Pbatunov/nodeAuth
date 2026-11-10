@@ -4,3 +4,15 @@
     border-right: 1px solid magenta;
     padding-right: 15px;
 }
+
+.chats-list__new-chat {
+    width: 100%;
+    margin-bottom: 15px;
+    padding: 8px;
+    border: 1px dashed magenta;
+    border-radius: 8px;
+    background: transparent;
+    color: white;
+    font-size: 0.9em;
+    cursor: pointer;
+}

@@ -2,7 +2,7 @@ import './styles.scss';
 import {useContext} from 'react';
 import {ChatContext} from '../../context/ChatContext';
 
-export const ChatListItem = ({chat, selectedIndex, index, handleClick}) => {
+export const ChatListItem = ({chat, isActive, unreadCount, handleClick}) => {
     const {
         id,
         companionName,
@@ -27,9 +27,9 @@ export const ChatListItem = ({chat, selectedIndex, index, handleClick}) => {
     return (
         <button
             key={id}
-            className={`chat-list-item ${index === selectedIndex ? 'active' : ''}`}
+            className={`chat-list-item ${isActive ? 'active' : ''}`}
             onClick={() => {
-                handleClick({index, chat});
+                handleClick({chat});
             }}
         >
             <div className='chat-list-item__avatar'>
@@ -42,7 +42,7 @@ export const ChatListItem = ({chat, selectedIndex, index, handleClick}) => {
             </div>
             {lastMessage && <div className='chat-list-item__meta'>
                 <div className='chat-list-item__time'>{formatDate(messageDate)}</div>
-                <div className='chat-list-item__notification'>5</div>
+                {unreadCount > 0 && <div className='chat-list-item__notification'>{unreadCount}</div>}
             </div>}
         </button>
     );

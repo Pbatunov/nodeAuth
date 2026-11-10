@@ -1,4 +1,4 @@
-module.exports = (({from, logger, callback}) => {
+module.exports = (({from, logger, callback, res}) => {
     const mysql = require('mysql2');
 
     const connection = mysql.createConnection({
@@ -9,13 +9,21 @@ module.exports = (({from, logger, callback}) => {
         charset: 'cp1251',
     });
 
+    // Без обработчика mysql2 кидает неперехваченное 'error' и роняет процесс.
+    connection.on('error', (error) => {
+        logger({statusText: from, messageText: error.message});
+    });
+
     connection.connect((error) => {
         if (error) {
-            console.log(`${from}: ${error}`);
-            connection.end();
+            logger({statusText: from, messageText: error.message});
 
+            // Соединение уже закрыто, вызывать connection.end() не нужно.
+            if (res && !res.headersSent) {
+                res.status(503).send([]);
+            }
 
-            return logger({stausText: from, messageText: error.message});
+            return;
         }
 
         const responseToFront = {
