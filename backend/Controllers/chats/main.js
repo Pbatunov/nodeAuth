@@ -156,4 +156,51 @@ const findSingleChat = ({firstId, secondId, res}) => {
     });
 };
 
-module.exports = {createChat, findAllChatsWithUser, findSingleChat};
+const deleteChat = ({chatId, userId, res}) => {
+    const deleteChatCallback = ({connection}) => {
+        // Удалять может только участник чата.
+        const checkSql = 'SELECT id FROM chats WHERE id = ? AND (firstId = ? OR secondId = ?)';
+
+        connection.execute(checkSql, [chatId, userId, userId], (error, result) => {
+            if (error) {
+                connection.end();
+                logger({statusText: 'deleteChatCheckError', messageText: error});
+
+                return res.status(500).send({success: false, message: 'Ошибка при удалении чата!'});
+            }
+
+            if (!result.length) {
+                connection.end();
+
+                return res.status(404).send({success: false, message: 'Чат не найден!'});
+            }
+
+            connection.execute('DELETE FROM chat_messages WHERE chatId = ?', [chatId], (error) => {
+                if (error) {
+                    connection.end();
+                    logger({statusText: 'deleteChatMessagesError', messageText: error});
+
+                    return res.status(500).send({success: false, message: 'Ошибка при удалении чата!'});
+                }
+
+                connection.execute('DELETE FROM chats WHERE id = ?', [chatId], (error) => {
+                    connection.end();
+
+                    if (error) {
+                        logger({statusText: 'deleteChatError', messageText: error});
+
+                        return res.status(500).send({success: false, message: 'Ошибка при удалении чата!'});
+                    }
+
+                    res.send({success: true, message: 'Чат удалён!'});
+                });
+            });
+        });
+    };
+
+    dbConnection({
+        logger, res, callback: deleteChatCallback, from: 'deleteChat',
+    });
+};
+
+module.exports = {createChat, findAllChatsWithUser, findSingleChat, deleteChat};

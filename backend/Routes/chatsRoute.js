@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const {createChat, findAllChatsWithUser, findSingleChat} = require('../Controllers/chats/main');
+const {createChat, findAllChatsWithUser, findSingleChat, deleteChat} = require('../Controllers/chats/main');
 
 router.post('/', (req, res) => {
     if (!req.body) {
@@ -48,6 +48,17 @@ router.get('/find/:firstId/:secondId', (req, res) => {
     }
 
     findSingleChat({firstId, secondId, res});
+});
+
+router.delete('/:chatId', (req, res) => {
+    const {chatId} = req.params;
+    const {userId} = req.body || {};
+
+    if (!chatId || !userId) {
+        return res.sendStatus(400);
+    }
+
+    deleteChat({chatId, userId, res});
 });
 
 module.exports = router;

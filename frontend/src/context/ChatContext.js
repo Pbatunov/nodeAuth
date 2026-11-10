@@ -1,6 +1,7 @@
 import {createContext, useEffect, useState} from 'react';
 import {getRequest} from '../utils/get-request';
 import {postRequest} from '../utils/post-request';
+import {deleteRequest} from '../utils/delete-request';
 import {io} from 'socket.io-client';
 
 export const ChatContext = createContext();
@@ -94,6 +95,28 @@ export const ChatContextProvider = ({children, user}) => {
         if (newChat) {
             await getChatMessages({chat: newChat});
         }
+    };
+
+    // Удаляет чат на сервере и убирает его из списка. Если чат был открыт — очищает окно сообщений.
+    const deleteChat = async ({chat}) => {
+        const response = await deleteRequest({
+            url: `chats/${chat.id}`,
+            data: {userId: user.id},
+        });
+
+        if (!response?.success) {
+            return response;
+        }
+
+        setChatsList((prev) => prev?.filter((item) => item.id !== chat.id));
+
+        if (currentChat?.id === chat.id) {
+            setCurrentChat(null);
+            setMessagesList(null);
+            setMessagesWarning(null);
+        }
+
+        return response;
     };
 
     const createMessage = async ({event, chatId, senderId, message}) => {
@@ -207,6 +230,7 @@ export const ChatContextProvider = ({children, user}) => {
             createMessage,
             getChatMessages,
             startChat,
+            deleteChat,
             messagesList,
             messagesWarning,
             setMessagesList,
