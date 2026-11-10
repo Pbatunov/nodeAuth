@@ -2,3 +2,7 @@ node_modules
 static/build
 .vscode
 .idea
+
+# Локальные дампы БД содержат персональные данные
+dump*.sql
+backend/.env

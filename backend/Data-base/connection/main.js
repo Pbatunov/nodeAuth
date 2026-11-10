@@ -2,10 +2,11 @@ module.exports = (({from, logger, callback, res}) => {
     const mysql = require('mysql2');
 
     const connection = mysql.createConnection({
-        host: '77.222.40.109',
-        user: 'batunov192',
-        database: 'batunov192',
-        password: 'ZkkpkMiv_2020',
+        host: process.env.DB_HOST,
+        port: Number(process.env.DB_PORT) || 3306,
+        user: process.env.DB_USER,
+        database: process.env.DB_NAME,
+        password: process.env.DB_PASSWORD,
         charset: 'cp1251',
     });
 
