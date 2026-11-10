@@ -5,4 +5,4 @@ static/build
 
 # Локальные дампы БД содержат персональные данные
 dump*.sql
-backend/.env
+backend/.env*
