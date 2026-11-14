@@ -110,7 +110,7 @@ const findAllChatsWithUser = ({userId, res}) => {
             }
 
             res.send(result);
-            res.end();
+            connection.end();
         });
     };
 
@@ -147,7 +147,7 @@ const findSingleChat = ({firstId, secondId, res}) => {
             const [chat] = result;
 
             res.send(chat);
-            res.end();
+            connection.end();
         });
     };
 

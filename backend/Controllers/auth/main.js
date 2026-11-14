@@ -24,6 +24,7 @@ module.exports = (({userData, req, res}) => {
             const [user] = result;
             const {id, login, name, createDate} = user;
 
+            connection.end();
             res.send({id, login, name, createDate});
             req.session.save();
             return res.end();
