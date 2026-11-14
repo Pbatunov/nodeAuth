@@ -9,6 +9,7 @@ export const MessageBox = () => {
     const {currentChat, createMessage, messagesList, messagesWarning} = useContext(ChatContext);
     const {userData} = useContext(AuthContext);
     const messagesListRef = useRef(null);
+    const inputRef = useRef(null);
     const {id: senderId} = userData;
 
 
@@ -23,7 +24,7 @@ export const MessageBox = () => {
     }
 
     return (
-        <div className='message-box'>
+        <div className={`message-box ${currentChat ? 'message-box--open' : ''}`}>
             <div className='message-box__list' ref={messagesListRef}>
                 {!messagesList?.length ?
                     <div className='message-box__warning'>{messagesWarning}</div> :
@@ -37,6 +38,7 @@ export const MessageBox = () => {
 
             <form className='message-box__input-wrapper'>
                 <input
+                    ref={inputRef}
                     type='text'
                     id='text'
                     className='message-box__input'

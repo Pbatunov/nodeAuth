@@ -6,11 +6,20 @@ import {ChatContext} from '../../context/ChatContext';
 
 export const Header = () => {
     const {userData, setUserData} = useContext(AuthContext);
-    const {setChatsList, setMessagesList, setMessagesWarning} = useContext(ChatContext);
+    const {currentChat, setCurrentChat, setChatsList, setMessagesList, setMessagesWarning} = useContext(ChatContext);
 
     return (
         <header className={styles.header}>
             <div className={styles['header__project-name']}>React Chat</div>
+            {currentChat && (
+                <button
+                    type='button'
+                    className={styles.header__back}
+                    onClick={() => setCurrentChat(null)}
+                >
+                    ←
+                </button>
+            )}
             {userData && <div className={styles['header__user-name']}>Добро пожаловать, {userData?.name}! </div>}
 
             <nav className={styles.header__nav}>
@@ -20,6 +29,7 @@ export const Header = () => {
                     localStorage.removeItem('user');
                     setUserData(null);
                     setChatsList(null);
+                    setCurrentChat(null);
                     setMessagesList(null);
                     setMessagesWarning(null);
                 }}>Выход</Link>}

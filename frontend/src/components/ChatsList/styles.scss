@@ -1,11 +1,12 @@
+@use "../../styles/breakpoints" as *;
+
 .chats-list {
     width: 30%;
     min-width: 330px;
     border-right: 1px solid magenta;
     padding-right: 15px;
-}
 
-.chats-list__new-chat {
+  &__new-chat {
     width: 100%;
     margin-bottom: 15px;
     padding: 8px;
@@ -15,4 +16,13 @@
     color: white;
     font-size: 0.9em;
     cursor: pointer;
+  }
+}
+
+@media (max-width: $bp-mobile) {
+  .chats-list {
+    width: 100%;
+    padding-right: unset;
+    border-right: none;
+  }
 }
