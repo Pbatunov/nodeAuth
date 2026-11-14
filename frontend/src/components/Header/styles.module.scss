@@ -44,12 +44,19 @@
 
 @media (max-width: $bp-mobile) {
   .header {
+    position: fixed;
+    width: 100%;
+    top: 0;
+    left: 0;
+    right: 0;
     display: grid;
     grid-template-columns: auto;
-    grid-template-areas:"title title title"
-                        "nav nav nav";
+    grid-template-areas:
+            "title title title"
+            "nav nav nav";
     height: 80px;
     row-gap: 10px;
+    z-index: 99;
 
 
     &__project-name {

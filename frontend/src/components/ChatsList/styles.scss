@@ -21,7 +21,11 @@
 
 @media (max-width: $bp-mobile) {
   .chats-list {
-    width: 100%;
+    top: 0;
+    bottom: 0;
+    min-width: 100%;
+    max-width: 100%;
+    //min-height: 100%;
     padding-right: unset;
     border-right: none;
   }
