@@ -5,9 +5,9 @@ module.exports = (({userData, req, res}) => {
     const passwordHash = crypto.createHash('md5').update(password).digest('hex');
 
     const authCallBack = ({connection, responseToFront}) => {
-        const sqlReqestSelectString = `SELECT * FROM test_users WHERE login = '${login}' and password = '${passwordHash}'`;
+        const sqlReqestSelectString = 'SELECT * FROM test_users WHERE login = ? AND password = ?';
 
-        connection.query(sqlReqestSelectString, (error, result) => {
+        connection.query(sqlReqestSelectString, [login, passwordHash], (error, result) => {
             if (error) {
                 connection.end();
 

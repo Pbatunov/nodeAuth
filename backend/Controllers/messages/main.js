@@ -27,9 +27,9 @@ const createMessage = ({chatId, senderId, message, res}) => {
     const createMessageCallback = ({connection}) => {
         let id = uuidv4().replaceAll('-', '');
 
-        const sqlReqestSelectByIdString = `SELECT * FROM chat_messages WHERE id = '${id}'`;
+        const sqlReqestSelectByIdString = 'SELECT * FROM chat_messages WHERE id = ?';
 
-        connection.query(sqlReqestSelectByIdString, (error, result) => {
+        connection.query(sqlReqestSelectByIdString, [id], (error, result) => {
             if (error) {
                 connection.end();
 
@@ -44,9 +44,9 @@ const createMessage = ({chatId, senderId, message, res}) => {
 
             const createDate = formatDate(new Date());
 
-            const sqlRequestInsertString = `INSERT INTO chat_messages (id, chatId, senderId, message ,createDate) VALUES ('${id}', '${chatId}', '${senderId}', '${message}', '${createDate}')`;
+            const sqlRequestInsertString = 'INSERT INTO chat_messages (id, chatId, senderId, message, createDate) VALUES (?, ?, ?, ?, ?)';
 
-            connection.execute(sqlRequestInsertString, (error) => {
+            connection.execute(sqlRequestInsertString, [id, chatId, senderId, message, createDate], (error) => {
                 if (error) {
                     connection.end();
 
@@ -72,9 +72,9 @@ const createMessage = ({chatId, senderId, message, res}) => {
 const findChatMessages = ({chatId, res}) => {
     const findChatMessagesCallback = ({connection, responseToFront}) => {
 
-        const sqlReqestSelectByIdString = `SELECT * FROM chat_messages WHERE chatId = '${chatId}' ORDER BY createDate ASC`;
+        const sqlReqestSelectByIdString = 'SELECT * FROM chat_messages WHERE chatId = ? ORDER BY createDate ASC';
 
-        connection.query(sqlReqestSelectByIdString, (error, result) => {
+        connection.query(sqlReqestSelectByIdString, [chatId], (error, result) => {
             if (error) {
                 connection.end();
 

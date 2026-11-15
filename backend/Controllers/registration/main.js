@@ -8,9 +8,9 @@ module.exports = (({userData, res}) => {
     const registrationCallback = ({connection, responseToFront}) => {
         let id = uuidv4().replaceAll('-', '');
 
-        const sqlReqestSelectByIdString = `SELECT * FROM test_users WHERE id = '${id}'`;
+        const sqlReqestSelectByIdString = 'SELECT * FROM test_users WHERE id = ?';
 
-        connection.query(sqlReqestSelectByIdString, (error, result) => {
+        connection.query(sqlReqestSelectByIdString, [id], (error, result) => {
             if (error) {
                 connection.end();
 
@@ -24,9 +24,9 @@ module.exports = (({userData, res}) => {
             }
         });
 
-        const sqlReqestSelectByLoginString = `SELECT * FROM test_users WHERE login = '${login}'`;
+        const sqlReqestSelectByLoginString = 'SELECT * FROM test_users WHERE login = ?';
 
-        connection.query(sqlReqestSelectByLoginString, (error, result) => {
+        connection.query(sqlReqestSelectByLoginString, [login], (error, result) => {
             if (error) {
                 connection.end();
 
@@ -54,9 +54,9 @@ module.exports = (({userData, res}) => {
                 timeZoneName: 'short',
             }).format(new Date());
 
-            const sqlRequestInsertString = `INSERT INTO test_users (id, name, login, password, createDate) VALUES ('${id}', '${name}', '${login}', '${passwordHash}', '${createDate}')`;
+            const sqlRequestInsertString = 'INSERT INTO test_users (id, name, login, password, createDate) VALUES (?, ?, ?, ?, ?)';
 
-            connection.execute(sqlRequestInsertString, (error) => {
+            connection.execute(sqlRequestInsertString, [id, name, login, passwordHash, createDate], (error) => {
                 if (error) {
                     connection.end();
 

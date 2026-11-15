@@ -5,9 +5,9 @@ const createChat = ({firstId, secondId, res, chatsData}) => {
     const createChatCallback = ({connection, responseToFront}) => {
         let id = uuidv4().replaceAll('-', '');
 
-        const sqlReqestSelectByIdString = `SELECT * FROM chats WHERE id = '${id}'`;
+        const sqlReqestSelectByIdString = 'SELECT * FROM chats WHERE id = ?';
 
-        connection.query(sqlReqestSelectByIdString, (error, result) => {
+        connection.query(sqlReqestSelectByIdString, [id], (error, result) => {
             if (error) {
                 connection.end();
 
@@ -32,9 +32,9 @@ const createChat = ({firstId, secondId, res, chatsData}) => {
                 timeZoneName: 'short',
             }).format(new Date());
 
-            const sqlRequestInsertString = `INSERT INTO chats (id, firstId, secondId, createDate) VALUES ('${id}', '${firstId}', '${secondId}', '${createDate}')`;
+            const sqlRequestInsertString = 'INSERT INTO chats (id, firstId, secondId, createDate) VALUES (?, ?, ?, ?)';
 
-            connection.execute(sqlRequestInsertString, (error) => {
+            connection.execute(sqlRequestInsertString, [id, firstId, secondId, createDate], (error) => {
                 if (error) {
                     connection.end();
 
@@ -65,11 +65,11 @@ const findAllChatsWithUser = ({userId, res}) => {
             SELECT 
              c.id AS id,
              CASE 
-             WHEN c.firstId <> '${userId}' THEN u1.name
+             WHEN c.firstId <> ? THEN u1.name
              ELSE u2.name
              END AS companionName,
              CASE 
-             WHEN c.firstId <> '${userId}' THEN c.firstId
+             WHEN c.firstId <> ? THEN c.firstId
              ELSE c.secondId
              END AS companionId,
              c.createDate,
@@ -90,10 +90,11 @@ const findAllChatsWithUser = ({userId, res}) => {
              ORDER BY chatId, createDate DESC
             ) m ON c.id = m.chatId AND m.rn = 1
             WHERE 
-             (c.firstId = '${userId}'
-             OR c.secondId = '${userId}')`;
+             (c.firstId = ?
+             OR c.secondId = ?)`;
 
-        connection.query(sqlReqestSelectByIdString, (error, result) => {
+        // Порядок параметров совпадает с порядком плейсхолдеров в запросе.
+        connection.query(sqlReqestSelectByIdString, [userId, userId, userId, userId], (error, result) => {
             if (error) {
                 connection.end();
 
@@ -126,9 +127,9 @@ const findAllChatsWithUser = ({userId, res}) => {
 const findSingleChat = ({firstId, secondId, res}) => {
     const findSingleChatCallback = ({connection, responseToFront}) => {
 
-        const sqlReqestSelectByIdString = `SELECT * FROM chats WHERE firstId = '${firstId}' AND secondId = '${secondId}'`;
+        const sqlReqestSelectByIdString = 'SELECT * FROM chats WHERE firstId = ? AND secondId = ?';
 
-        connection.query(sqlReqestSelectByIdString, (error, result) => {
+        connection.query(sqlReqestSelectByIdString, [firstId, secondId], (error, result) => {
             if (error) {
                 connection.end();
 
