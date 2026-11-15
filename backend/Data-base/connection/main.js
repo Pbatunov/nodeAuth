@@ -7,7 +7,7 @@ module.exports = (({from, logger, callback, res}) => {
         user: process.env.DB_USER,
         database: process.env.DB_NAME,
         password: process.env.DB_PASSWORD,
-        charset: 'cp1251',
+        charset: 'utf8mb4',
     });
 
     // Без обработчика mysql2 кидает неперехваченное 'error' и роняет процесс.
