@@ -3,28 +3,32 @@ const express = require('express');
 const {Server} = require('socket.io');
 const app = express();
 const session = require('express-session');
-const cors = require('cors');
+const crypto = require('crypto');
 // eslint-disable-next-line no-undef
 const port = process.env.PORT || 5000;
 const userRoute = require('./Routes/userRoute');
 const chatsRoute = require('./Routes/chatsRoute');
 const messagesRoute = require('./Routes/messagesRoute');
 
-app.use(cors({
-    origin: '*',
-}));
+// Фронтенд ходит на API через прокси того же origin, поэтому CORS не нужен.
+if (!process.env.SESSION_SECRET) {
+    console.warn('SESSION_SECRET не задан: сессии сбросятся при перезапуске сервера');
+}
 
-app.use(session({
-    // eslint-disable-next-line no-undef
-    secret: 'secret value',
+const sessionMiddleware = session({
+    secret: process.env.SESSION_SECRET || crypto.randomBytes(32).toString('hex'),
+    name: 'sid',
     resave: false,
-    saveUninitialized: true,
+    saveUninitialized: false,
     cookie: {
-        path: '/',
-        // eslint-disable-next-line no-undef
-        maxAge: 3600000 * 24 * 365,
+        httpOnly: true,
+        sameSite: 'lax',
+        secure: false, // HTTPS пока не используется
+        maxAge: 1000 * 60 * 60 * 24 * 7,
     },
-}));
+});
+
+app.use(sessionMiddleware);
 
 app.use(express.json());
 app.use('/api/users', userRoute);
@@ -39,17 +43,26 @@ const expressServer = app.listen(port, () => {
     console.log(`http://localhost:${port}`);
 });
 
-const io = new Server(expressServer, {
-    cors: {
-        // Разрешённый источник фронтенда. По умолчанию — любой (для разработки в локальной сети).
-        origin: process.env.CLIENT_ORIGIN || '*',
-    },
+const io = new Server(expressServer);
+
+// Сессия из cookie доступна сокету через socket.request.session.
+io.engine.use(sessionMiddleware);
+
+// Без входа подключение к сокету не принимаем.
+io.use((socket, next) => {
+    if (!socket.request.session?.userId) {
+        return next(new Error('unauthorized'));
+    }
+
+    next();
 });
 
 let onlineUsers = [];
 
 io.on('connection', (socket) => {
-    socket.on('userConnect', (userId) => {
+    socket.on('userConnect', () => {
+        // Идентичность берётся из сессии, а не из payload.
+        const userId = socket.request.session.userId;
 
         // Если пользователь переподключился раньше, чем сервер заметил разрыв старого сокета,
         // заменяем запись: иначе сообщения будут уходить на мёртвый socketId.
@@ -65,13 +78,15 @@ io.on('connection', (socket) => {
     });
 
     socket.on('sendMessage', (message) => {
+        // Отправитель всегда тот, кто вошёл в сессии.
+        const senderId = socket.request.session.userId;
 
         console.log({message});
 
         const user = onlineUsers.find((user) => user.userId === message.companionId);
 
         if (user) {
-            io.to(user.socketId).emit('getMessage', message);
+            io.to(user.socketId).emit('getMessage', {...message, senderId});
         }
 
     });

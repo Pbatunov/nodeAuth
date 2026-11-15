@@ -25,7 +25,6 @@ export const Login = () => {
                     });
 
                     if (data?.login) {
-                        localStorage.setItem('user', JSON.stringify(data));
                         setUserData(data);
                     }
 

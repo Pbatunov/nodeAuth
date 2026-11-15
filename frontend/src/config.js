@@ -1,4 +1,3 @@
-// Адрес бэкенда задаётся в frontend/.env: REACT_APP_API_URL=http://192.168.1.10:5000
-// Если переменная не задана, берётся хост, с которого открыта страница,
-// поэтому приложение работает и на localhost, и по IP в локальной сети.
-export const API_URL = process.env.REACT_APP_API_URL || `http://${window.location.hostname}:5000`;
+// Пустой адрес = тот же origin, что и страница. Запросы идут через прокси (src/setupProxy.js)
+// или через reverse proxy в продакшене. Так cookie сессии работают без CORS.
+export const API_URL = '';

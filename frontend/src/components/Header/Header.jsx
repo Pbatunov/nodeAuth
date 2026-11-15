@@ -3,6 +3,7 @@ import styles from './styles.module.scss';
 import {useContext} from 'react';
 import {AuthContext} from '../../context/AuthContext';
 import {ChatContext} from '../../context/ChatContext';
+import {postRequest} from '../../utils/post-request';
 
 export const Header = () => {
     const {userData, setUserData} = useContext(AuthContext);
@@ -26,7 +27,8 @@ export const Header = () => {
                 {!userData && <Link to='/register'>Регистрация</Link>}
                 {!userData && <Link to='/login'>Вход</Link>}
                 {userData && <Link to='/' onClick={() => {
-                    localStorage.removeItem('user');
+                    // Сессия удаляется на сервере, cookie очищается им же.
+                    postRequest({url: 'users/logout', data: {}});
                     setUserData(null);
                     setChatsList(null);
                     setCurrentChat(null);

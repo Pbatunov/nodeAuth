@@ -27,4 +27,35 @@ const findAllUsers = ({res}) => {
     });
 };
 
-module.exports = {findAllUsers};
+// Данные текущего пользователя по сессии (для восстановления входа после перезагрузки).
+const getCurrentUser = ({userId, res}) => {
+    const getCurrentUserCallback = ({connection}) => {
+        connection.execute(
+            'SELECT id, login, name, createDate FROM test_users WHERE id = ?',
+            [userId],
+            (error, result) => {
+                connection.end();
+
+                if (error) {
+                    logger({statusText: 'getCurrentUserError', messageText: error.message});
+                    return res.status(500).send({success: false});
+                }
+
+                if (!result.length) {
+                    return res.status(401).send({success: false, message: 'Пользователь не найден'});
+                }
+
+                res.send(result[0]);
+            },
+        );
+    };
+
+    dbConnection({
+        logger,
+        res,
+        callback: getCurrentUserCallback,
+        from: 'getCurrentUser',
+    });
+};
+
+module.exports = {findAllUsers, getCurrentUser};

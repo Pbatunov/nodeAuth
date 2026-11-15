@@ -25,9 +25,17 @@ module.exports = (({userData, req, res}) => {
             const {id, login, name, createDate} = user;
 
             connection.end();
-            res.send({id, login, name, createDate});
-            req.session.save();
-            return res.end();
+
+            // Новая сессия после входа: защита от фиксации сессии.
+            req.session.regenerate((error) => {
+                if (error) {
+                    logger(error);
+                    return res.status(500).send({success: false, message: 'Не удалось создать сессию'});
+                }
+
+                req.session.userId = id;
+                req.session.save(() => res.send({id, login, name, createDate}));
+            });
         });
     };
 

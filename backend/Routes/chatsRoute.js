@@ -1,6 +1,9 @@
 const express = require('express');
 const router = express.Router();
 const {createChat, findAllChatsWithUser, findSingleChat, deleteChat} = require('../Controllers/chats/main');
+const requireAuth = require('../middleware/requireAuth');
+
+router.use(requireAuth);
 
 router.post('/', (req, res) => {
     if (!req.body) {
@@ -8,9 +11,11 @@ router.post('/', (req, res) => {
         return req.end();
     }
 
-    const {firstId, secondId} = req.body;
+    // Создатель чата — текущий пользователь из сессии.
+    const firstId = req.session.userId;
+    const {secondId} = req.body;
 
-    if (!firstId && !secondId) {
+    if (!secondId) {
         res.sendStatus(400).send('Ошибка при создании чата!');
         return req.end();
     }
@@ -31,6 +36,10 @@ router.get('/:userId', (req, res) => {
         return req.end();
     }
 
+    if (userId !== req.session.userId) {
+        return res.sendStatus(403);
+    }
+
     findAllChatsWithUser({userId, res});
 });
 
@@ -47,12 +56,18 @@ router.get('/find/:firstId/:secondId', (req, res) => {
         return req.end();
     }
 
+    const currentUserId = req.session.userId;
+
+    if (currentUserId !== firstId && currentUserId !== secondId) {
+        return res.sendStatus(403);
+    }
+
     findSingleChat({firstId, secondId, res});
 });
 
 router.delete('/:chatId', (req, res) => {
     const {chatId} = req.params;
-    const {userId} = req.body || {};
+    const userId = req.session.userId;
 
     if (!chatId || !userId) {
         return res.sendStatus(400);

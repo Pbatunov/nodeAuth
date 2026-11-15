@@ -9,13 +9,23 @@ import {Main} from './components/Main';
 import {useState, useEffect} from 'react';
 import {AuthContext} from './context/AuthContext';
 import {ChatContextProvider} from './context/ChatContext';
+import {getRequest} from './utils/get-request';
 
 const App = () => {
     const [userData, setUserData] = useState(null);
+    const [isAuthChecked, setIsAuthChecked] = useState(false);
 
+    // Сессия хранится в httpOnly-cookie, поэтому спрашиваем сервер, кто вошёл.
     useEffect(() => {
-        setUserData(JSON.parse(localStorage.getItem('user')) || null);
+        getRequest({url: 'users/me'}).then((data) => {
+            setUserData(data?.id ? data : null);
+            setIsAuthChecked(true);
+        });
     }, []);
+
+    if (!isAuthChecked) {
+        return null;
+    }
 
     return (
         <AuthContext.Provider value={{

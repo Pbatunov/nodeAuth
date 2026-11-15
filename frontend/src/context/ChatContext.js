@@ -3,7 +3,6 @@ import {getRequest} from '../utils/get-request';
 import {postRequest} from '../utils/post-request';
 import {deleteRequest} from '../utils/delete-request';
 import {io} from 'socket.io-client';
-import {API_URL} from '../config';
 
 export const ChatContext = createContext();
 
@@ -139,7 +138,12 @@ export const ChatContextProvider = ({children, user}) => {
     };
 
     useEffect(() => {
-        const newSocket = io(API_URL);
+        // Сокет создаём только после входа: иначе сервер отклонит подключение без сессии.
+        if (!user) {
+            return;
+        }
+
+        const newSocket = io();
         setSocket(newSocket);
 
         return () => {
