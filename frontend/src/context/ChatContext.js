@@ -158,7 +158,12 @@ export const ChatContextProvider = ({children, user}) => {
 
         const {id: userId} = user;
 
-        socket.emit('userConnect', userId);
+        // После разрыва соединения (экран заблокирован) socket.io переподключается с новым id,
+        // поэтому пользователя нужно зарегистрировать на сервере заново при каждом connect.
+        const registerUser = () => socket.emit('userConnect', userId);
+
+        registerUser();
+        socket.on('connect', registerUser);
 
         socket.on('getOnlineUsers', (users) => {
 
@@ -166,9 +171,40 @@ export const ChatContextProvider = ({children, user}) => {
         });
 
         return () => {
+            socket.off('connect', registerUser);
             socket.off('getOnlineUsers');
         };
     }, [socket, user]);
+
+    // При возврате на вкладку (разблокировка телефона) переподключаем сокет и подгружаем открытый чат,
+    // чтобы сообщения, пришедшие пока экран был заблокирован, появились без обновления страницы.
+    useEffect(() => {
+        if (!socket || !user) {
+            return;
+        }
+
+        const syncOnResume = () => {
+            if (document.visibilityState !== 'visible') {
+                return;
+            }
+
+            if (!socket.connected) {
+                socket.connect();
+            }
+
+            if (currentChat) {
+                refreshChatMessages({chatId: currentChat.id});
+            }
+        };
+
+        socket.on('connect', syncOnResume);
+        document.addEventListener('visibilitychange', syncOnResume);
+
+        return () => {
+            socket.off('connect', syncOnResume);
+            document.removeEventListener('visibilitychange', syncOnResume);
+        };
+    }, [socket, user, currentChat]);
 
     useEffect(() => {
         if (!socket) {

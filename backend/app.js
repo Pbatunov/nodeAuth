@@ -51,14 +51,13 @@ let onlineUsers = [];
 io.on('connection', (socket) => {
     socket.on('userConnect', (userId) => {
 
-        const hasOnlineUsers = onlineUsers.some((user) => user.userId === userId);
-
-        if (!hasOnlineUsers) {
-            onlineUsers.push({
-                userId,
-                socketId: socket.id,
-            });
-        }
+        // Если пользователь переподключился раньше, чем сервер заметил разрыв старого сокета,
+        // заменяем запись: иначе сообщения будут уходить на мёртвый socketId.
+        onlineUsers = onlineUsers.filter((user) => user.userId !== userId);
+        onlineUsers.push({
+            userId,
+            socketId: socket.id,
+        });
 
         console.log({onlineUsers});
 
