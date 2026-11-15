@@ -44,20 +44,19 @@
 
 @media (max-width: $bp-mobile) {
   .header {
-    position: fixed;
-    width: 100%;
-    top: 0;
-    left: 0;
-    right: 0;
     display: grid;
     grid-template-columns: auto;
     grid-template-areas:
             "title title title"
             "nav nav nav";
+    position: fixed;
+    width: 100%;
+    top: 0;
+    left: 0;
+    right: 0;
     height: 80px;
-    row-gap: 10px;
     z-index: 99;
-
+    padding-block: 10px;
 
     &__project-name {
       grid-area: title;
@@ -90,7 +89,7 @@
           background: transparent;
           border: none;
           color: magenta;
-          font-size: 1.5em;
+          font-size: 1.7em;
           cursor: pointer;
         }
 
