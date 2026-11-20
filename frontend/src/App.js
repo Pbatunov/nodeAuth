@@ -39,6 +39,7 @@ const App = () => {
                         <Routes>
                             <Route path='/' element={userData ? <Chat/> : <Login/>}/>
                             <Route path='/login' element={userData ? <Chat/> : <Login/>}/>
+                            <Route path='/chat/:chatId' element={userData ? <Chat/> : <Login/>}/>
                             <Route path='/register' element={<Register/>}/>
                         </Routes>
                     </Main>

@@ -1,4 +1,4 @@
-import {Link} from 'react-router';
+import {Link, useNavigate} from 'react-router';
 import styles from './styles.module.scss';
 import {useContext} from 'react';
 import {AuthContext} from '../../context/AuthContext';
@@ -8,6 +8,7 @@ import {postRequest} from '../../utils/post-request';
 export const Header = () => {
     const {userData, setUserData} = useContext(AuthContext);
     const {currentChat, setCurrentChat, setChatsList, setMessagesList, setMessagesWarning} = useContext(ChatContext);
+    const navigate = useNavigate();
 
     return (
         <header className={styles.header}>
@@ -16,7 +17,8 @@ export const Header = () => {
                 <button
                     type='button'
                     className={styles.header__back}
-                    onClick={() => setCurrentChat(null)}
+                    // Чат открыт по адресу /chat/:id, поэтому возврат — это переход на главную
+                    onClick={() => navigate('/')}
                 >
                     ←
                 </button>

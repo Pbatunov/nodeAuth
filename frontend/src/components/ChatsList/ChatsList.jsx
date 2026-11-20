@@ -13,6 +13,10 @@ export const ChatsList = () => {
         return null;
     }
 
+    // Чаты с самым свежим сообщением — наверху. Чаты без сообщений уходят вниз.
+    const getActivityTime = (chat) => new Date(chat.messageDate).getTime() || 0;
+    const sortedChatsList = [...chatsList].sort((a, b) => getActivityTime(b) - getActivityTime(a));
+
     const handleClick = ({chat}) => {
         if (currentChat?.id === chat.id) {
             return;
@@ -33,7 +37,7 @@ export const ChatsList = () => {
 
             {isNewChatOpen && <NewChat onClose={() => setIsNewChatOpen(false)}/>}
 
-            {chatsList.map((chat) => {
+            {sortedChatsList.map((chat) => {
                 return (
                     <ChatListItem
                         key={chat.id}

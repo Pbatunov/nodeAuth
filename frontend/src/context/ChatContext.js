@@ -1,4 +1,5 @@
-import {createContext, useEffect, useState} from 'react';
+import {createContext, useCallback, useEffect, useState} from 'react';
+import {useLocation, useNavigate} from 'react-router-dom';
 import {getRequest} from '../utils/get-request';
 import {postRequest} from '../utils/post-request';
 import {deleteRequest} from '../utils/delete-request';
@@ -16,6 +17,11 @@ export const ChatContextProvider = ({children, user}) => {
     const [onlineUsers, setOnlineUsers] = useState(null);
     // Непрочитанные сообщения по chatId. Хранятся в памяти текущей сессии.
     const [unreadCounts, setUnreadCounts] = useState({});
+
+    const navigate = useNavigate();
+    const {pathname} = useLocation();
+    // ID открытого чата хранится в адресе (/chat/:chatId), поэтому он переживает перезагрузку страницы.
+    const routeChatId = pathname.match(/^\/chat\/([^/]+)$/)?.[1] ?? null;
 
     useEffect(() => {
         const getChatsList = async () => {
@@ -36,7 +42,8 @@ export const ChatContextProvider = ({children, user}) => {
     }, [user, messagesList]
     );
 
-    const getChatMessages = async ({chat}) => {
+    // Загружает сообщения чата и делает его открытым. syncUrl — обновить адрес на /chat/:chatId.
+    const loadChat = useCallback(async ({chat, syncUrl}) => {
         const chatMessagesList = await getRequest({url: `messages/${chat.id}`});
 
         if (Array.isArray(chatMessagesList)) {
@@ -54,7 +61,43 @@ export const ChatContextProvider = ({children, user}) => {
 
         setCurrentChat(chat);
         setUnreadCounts((prev) => ({...prev, [chat.id]: 0}));
-    };
+
+        // navigate вызывается в той же задаче, что и setCurrentChat, поэтому React обновит их одним рендером.
+        if (syncUrl) {
+            navigate(`/chat/${chat.id}`);
+        }
+    }, [navigate]);
+
+    const getChatMessages = ({chat}) => loadChat({chat, syncUrl: true});
+
+    // После перезагрузки страницы открываем чат из адреса, когда список чатов загружен.
+    useEffect(() => {
+        if (!user || !Array.isArray(chatsList) || !routeChatId) {
+            return;
+        }
+
+        if (currentChat && String(currentChat.id) === routeChatId) {
+            return;
+        }
+
+        const chatFromUrl = chatsList.find((chat) => String(chat.id) === routeChatId);
+
+        if (chatFromUrl) {
+            loadChat({chat: chatFromUrl, syncUrl: false});
+        } else {
+            // Чата нет (удалён или недоступен) — возвращаемся на главную.
+            navigate('/', {replace: true});
+        }
+    }, [user, chatsList, routeChatId, currentChat, loadChat, navigate]);
+
+    // Адрес больше не указывает на чат (кнопка «назад» браузера, возврат к списку) — закрываем открытый чат.
+    useEffect(() => {
+        if (!routeChatId && currentChat) {
+            setCurrentChat(null);
+            setMessagesList(null);
+            setMessagesWarning(null);
+        }
+    }, [routeChatId, currentChat]);
 
     // Тихо обновляет сообщения открытого чата. При ошибке список не трогаем.
     const refreshChatMessages = async ({chatId}) => {
