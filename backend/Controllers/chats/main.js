@@ -64,14 +64,18 @@ const findAllChatsWithUser = ({userId, res}) => {
         const sqlReqestSelectByIdString = `
             SELECT 
              c.id AS id,
-             CASE 
+             CASE
              WHEN c.firstId <> ? THEN u1.name
              ELSE u2.name
              END AS companionName,
-             CASE 
+             CASE
              WHEN c.firstId <> ? THEN c.firstId
              ELSE c.secondId
              END AS companionId,
+             CASE
+             WHEN c.firstId <> ? THEN u1.avatar
+             ELSE u2.avatar
+             END AS companionAvatar,
              c.createDate,
              m.message AS lastMessage,
              m.createDate AS messageDate
@@ -93,8 +97,8 @@ const findAllChatsWithUser = ({userId, res}) => {
              (c.firstId = ?
              OR c.secondId = ?)`;
 
-        // Порядок параметров совпадает с порядком плейсхолдеров в запросе.
-        connection.query(sqlReqestSelectByIdString, [userId, userId, userId, userId], (error, result) => {
+        // Порядок параметров совпадает с порядком плейсхолдеров в запросе: три в SELECT, два в WHERE.
+        connection.query(sqlReqestSelectByIdString, [userId, userId, userId, userId, userId], (error, result) => {
             if (error) {
                 connection.end();
 

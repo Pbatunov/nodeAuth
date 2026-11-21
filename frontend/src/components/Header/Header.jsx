@@ -4,6 +4,7 @@ import {useContext} from 'react';
 import {AuthContext} from '../../context/AuthContext';
 import {ChatContext} from '../../context/ChatContext';
 import {postRequest} from '../../utils/post-request';
+import {AvatarUpload} from '../AvatarUpload/AvatarUpload';
 
 export const Header = () => {
     const {userData, setUserData} = useContext(AuthContext);
@@ -23,7 +24,12 @@ export const Header = () => {
                     ←
                 </button>
             )}
-            {userData && <div className={styles['header__user-name']}>Добро пожаловать, {userData?.name}! </div>}
+            {userData && (
+                <div className={styles['header__user-name']}>
+                    <AvatarUpload/>
+                    <span>Добро пожаловать, {userData?.name}! </span>
+                </div>
+            )}
 
             <nav className={styles.header__nav}>
                 {!userData && <Link to='/register'>Регистрация</Link>}

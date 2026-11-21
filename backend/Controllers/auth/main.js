@@ -22,7 +22,7 @@ module.exports = (({userData, req, res}) => {
                 return logger(responseToFront.message);
             }
             const [user] = result;
-            const {id, login, name, createDate} = user;
+            const {id, login, name, createDate, avatar} = user;
 
             connection.end();
 
@@ -34,7 +34,7 @@ module.exports = (({userData, req, res}) => {
                 }
 
                 req.session.userId = id;
-                req.session.save(() => res.send({id, login, name, createDate}));
+                req.session.save(() => res.send({id, login, name, createDate, avatar}));
             });
         });
     };

@@ -16,6 +16,9 @@
   }
 
   &__user-name {
+    display: flex;
+    align-items: center;
+    column-gap: 8px;
     font-size: 1em;
     color: #FF4444;
   }
@@ -94,7 +97,7 @@
         }
 
         &__user-name {
-          display: grid;
+          display: flex;
           grid-area: user;
           font-size: 0.9em;
           justify-content: center;

@@ -4,6 +4,7 @@ const {Server} = require('socket.io');
 const app = express();
 const session = require('express-session');
 const crypto = require('crypto');
+const path = require('path');
 // eslint-disable-next-line no-undef
 const port = process.env.PORT || 5000;
 const userRoute = require('./Routes/userRoute');
@@ -31,6 +32,8 @@ const sessionMiddleware = session({
 app.use(sessionMiddleware);
 
 app.use(express.json());
+// Аватарки отдаются с того же origin, что и API (прокси в dev-режиме проксирует только /api).
+app.use('/api/uploads', express.static(path.join(__dirname, 'uploads')));
 app.use('/api/users', userRoute);
 app.use('/api/chats', chatsRoute);
 app.use('/api/messages', messagesRoute);

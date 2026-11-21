@@ -2,12 +2,14 @@ import './styles.scss';
 import {useContext, useEffect, useRef, useState} from 'react';
 import {ChatContext} from '../../context/ChatContext';
 import {Avatar} from '../Avatar/Avatar';
+import {API_URL} from '../../config';
 
 export const ChatListItem = ({chat, isActive, unreadCount, handleClick}) => {
     const {
         id,
         companionName,
         companionId,
+        companionAvatar,
         lastMessage,
         messageDate,
     } = chat;
@@ -90,7 +92,12 @@ export const ChatListItem = ({chat, isActive, unreadCount, handleClick}) => {
             }}
         >
             <div className='chat-list-item__avatar'>
-                <Avatar name={companionName} userId={companionId} size={50}/>
+                <Avatar
+                    name={companionName}
+                    userId={companionId}
+                    src={companionAvatar ? `${API_URL}${companionAvatar}` : null}
+                    size={50}
+                />
                 {isOnline ? <div className='chat-list-item__online'></div> : ''}
             </div>
             <div className='chat-list-item__text'>

@@ -1,3 +1,4 @@
+import {useState} from 'react';
 import './styles.scss';
 
 // Цвета с достаточным контрастом для белых букв.
@@ -28,11 +29,20 @@ const getInitials = (name) => {
 };
 
 export const Avatar = ({name = '', userId, src, size = 50}) => {
+    // Запоминаем адрес, который не загрузился, чтобы при смене src снова попробовать картинку.
+    const [failedSrc, setFailedSrc] = useState(null);
     const sizeStyle = {width: size, height: size};
 
-    // Картинка появится, когда пользователь её загрузит. Пока её нет — буквы.
-    if (src) {
-        return <img className='avatar' src={src} alt='' style={sizeStyle}/>;
+    if (src && src !== failedSrc) {
+        return (
+            <img
+                className='avatar'
+                src={src}
+                alt=''
+                style={sizeStyle}
+                onError={() => setFailedSrc(src)}
+            />
+        );
     }
 
     return (

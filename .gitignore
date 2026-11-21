@@ -1,5 +1,7 @@
 node_modules
 static/build
+# Загруженные пользователями аватарки
+backend/uploads
 .vscode
 .idea
 

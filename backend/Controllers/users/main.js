@@ -31,7 +31,7 @@ const findAllUsers = ({res}) => {
 const getCurrentUser = ({userId, res}) => {
     const getCurrentUserCallback = ({connection}) => {
         connection.execute(
-            'SELECT id, login, name, createDate FROM test_users WHERE id = ?',
+            'SELECT id, login, name, createDate, avatar FROM test_users WHERE id = ?',
             [userId],
             (error, result) => {
                 connection.end();
