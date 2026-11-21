@@ -1,6 +1,7 @@
 import './styles.scss';
 import {useContext, useEffect, useRef, useState} from 'react';
 import {ChatContext} from '../../context/ChatContext';
+import {Avatar} from '../Avatar/Avatar';
 
 export const ChatListItem = ({chat, isActive, unreadCount, handleClick}) => {
     const {
@@ -89,7 +90,7 @@ export const ChatListItem = ({chat, isActive, unreadCount, handleClick}) => {
             }}
         >
             <div className='chat-list-item__avatar'>
-                <img src='frontend/src/components/ChatListItem/ChatListItem' alt=''/>
+                <Avatar name={companionName} userId={companionId} size={50}/>
                 {isOnline ? <div className='chat-list-item__online'></div> : ''}
             </div>
             <div className='chat-list-item__text'>
