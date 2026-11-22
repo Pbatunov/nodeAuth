@@ -4,6 +4,8 @@ import {useContext} from 'react';
 import {AuthContext} from '../../context/AuthContext';
 import {ChatContext} from '../../context/ChatContext';
 import {postRequest} from '../../utils/post-request';
+import {API_URL} from '../../config';
+import {Avatar} from '../Avatar/Avatar';
 import {AvatarUpload} from '../AvatarUpload/AvatarUpload';
 
 export const Header = () => {
@@ -24,7 +26,18 @@ export const Header = () => {
                     ←
                 </button>
             )}
-            {userData && (
+            {currentChat ? (
+                // Открыт чат — показываем собеседника вместо себя
+                <div className={styles['header__user-name']}>
+                    <Avatar
+                        name={currentChat.companionName}
+                        userId={currentChat.companionId}
+                        src={currentChat.companionAvatar ? `${API_URL}${currentChat.companionAvatar}` : null}
+                        size={32}
+                    />
+                    <span>{currentChat.companionName}</span>
+                </div>
+            ) : userData && (
                 <div className={styles['header__user-name']}>
                     <AvatarUpload/>
                     <span>{userData?.name}</span>
