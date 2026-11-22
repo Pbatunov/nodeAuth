@@ -1,331 +1,60 @@
-import {createContext, useCallback, useEffect, useState} from 'react';
-import {useLocation, useNavigate} from 'react-router-dom';
-import {getRequest} from '../utils/get-request';
-import {postRequest} from '../utils/post-request';
-import {deleteRequest} from '../utils/delete-request';
-import {io} from 'socket.io-client';
+import {createContext, useState} from 'react';
+import {useChatsList} from './chat/useChatsList';
+import {useUnreadCounts} from './chat/useUnreadCounts';
+import {useOpenChat} from './chat/useOpenChat';
+import {useChatActions} from './chat/useChatActions';
+import {useChatSocket} from './chat/useChatSocket';
+import {useResumeSync} from './chat/useResumeSync';
+import {useIncomingMessages} from './chat/useIncomingMessages';
+import {useSendMessage} from './chat/useSendMessage';
 
 export const ChatContext = createContext();
 
+// Провайдер только собирает хуки из папки ./chat. Логика каждого блока — в своём файле.
 export const ChatContextProvider = ({children, user}) => {
-    const [chatsList, setChatsList] = useState(null);
+    // Сообщения открытого чата живут здесь: от них зависит перезагрузка списка чатов (useChatsList).
     const [messagesList, setMessagesList] = useState(null);
-    const [newMessage, setNewMessage] = useState(null);
-    const [messagesWarning, setMessagesWarning] = useState(null);
-    const [currentChat, setCurrentChat] = useState(null);
-    const [socket, setSocket] = useState(null);
-    const [onlineUsers, setOnlineUsers] = useState(null);
-    // Непрочитанные сообщения по chatId. Хранятся в памяти текущей сессии.
-    const [unreadCounts, setUnreadCounts] = useState({});
 
-    const navigate = useNavigate();
-    const {pathname} = useLocation();
-    // ID открытого чата хранится в адресе (/chat/:chatId), поэтому он переживает перезагрузку страницы.
-    const routeChatId = pathname.match(/^\/chat\/([^/]+)$/)?.[1] ?? null;
-
-    useEffect(() => {
-        const getChatsList = async () => {
-            const {id: userId} = user;
-            const chatsList = await getRequest({url: `chats/${userId}`});
-
-            // Сервер может вернуть ошибку или объект вместо массива — тогда список пустой.
-            setChatsList(Array.isArray(chatsList) ? chatsList : []);
-
-            /*if (!messagesList?.length) {
-                return null;
-            }*/
-        };
-
-        if (user) {
-            getChatsList();
-        }
-    }, [user, messagesList]
-    );
-
-    // Загружает сообщения чата и делает его открытым. syncUrl — обновить адрес на /chat/:chatId.
-    const loadChat = useCallback(async ({chat, syncUrl}) => {
-        const chatMessagesList = await getRequest({url: `messages/${chat.id}`});
-
-        if (Array.isArray(chatMessagesList)) {
-            setMessagesList(chatMessagesList);
-            setMessagesWarning(null);
-        } else if (chatMessagesList?.responseToFront) {
-            // Пустой чат: сервер присылает объект с сообщением, а не массив.
-            setMessagesList([]);
-            setMessagesWarning(chatMessagesList.responseToFront.message);
-        } else {
-            // Ошибка запроса (например, 503 при недоступной БД).
-            setMessagesList([]);
-            setMessagesWarning(chatMessagesList?.message || 'Не удалось загрузить сообщения');
-        }
-
-        setCurrentChat(chat);
-        setUnreadCounts((prev) => ({...prev, [chat.id]: 0}));
-
-        // navigate вызывается в той же задаче, что и setCurrentChat, поэтому React обновит их одним рендером.
-        if (syncUrl) {
-            navigate(`/chat/${chat.id}`);
-        }
-    }, [navigate]);
-
-    const getChatMessages = ({chat}) => loadChat({chat, syncUrl: true});
-
-    // После перезагрузки страницы открываем чат из адреса, когда список чатов загружен.
-    useEffect(() => {
-        if (!user || !Array.isArray(chatsList) || !routeChatId) {
-            return;
-        }
-
-        if (currentChat && String(currentChat.id) === routeChatId) {
-            return;
-        }
-
-        const chatFromUrl = chatsList.find((chat) => String(chat.id) === routeChatId);
-
-        if (chatFromUrl) {
-            loadChat({chat: chatFromUrl, syncUrl: false});
-        } else {
-            // Чата нет (удалён или недоступен) — возвращаемся на главную.
-            navigate('/', {replace: true});
-        }
-    }, [user, chatsList, routeChatId, currentChat, loadChat, navigate]);
-
-    // Адрес больше не указывает на чат (кнопка «назад» браузера, возврат к списку) — закрываем открытый чат.
-    useEffect(() => {
-        if (!routeChatId && currentChat) {
-            setCurrentChat(null);
-            setMessagesList(null);
-            setMessagesWarning(null);
-        }
-    }, [routeChatId, currentChat]);
-
-    // Тихо обновляет сообщения открытого чата. При ошибке список не трогаем.
-    const refreshChatMessages = async ({chatId}) => {
-        const chatMessagesList = await getRequest({url: `messages/${chatId}`});
-
-        if (Array.isArray(chatMessagesList)) {
-            setMessagesList(chatMessagesList);
-        }
-    };
-
-    // Открывает личный чат с пользователем: если чат уже есть — открывает его, иначе создаёт.
-    const startChat = async ({companion}) => {
-        const existingChat = chatsList?.find((chat) => chat.companionId === companion.id);
-
-        if (existingChat) {
-            return getChatMessages({chat: existingChat});
-        }
-
-        const response = await postRequest({
-            url: 'chats',
-            data: {firstId: user.id, secondId: companion.id},
-        });
-
-        if (!response?.success) {
-            return response;
-        }
-
-        const updatedChatsList = await getRequest({url: `chats/${user.id}`});
-
-        if (!Array.isArray(updatedChatsList)) {
-            return;
-        }
-
-        setChatsList(updatedChatsList);
-
-        const newChat = updatedChatsList.find((chat) => chat.companionId === companion.id);
-
-        if (newChat) {
-            await getChatMessages({chat: newChat});
-        }
-    };
-
-    // Удаляет чат на сервере и убирает его из списка. Если чат был открыт — очищает окно сообщений.
-    const deleteChat = async ({chat}) => {
-        const response = await deleteRequest({
-            url: `chats/${chat.id}`,
-            data: {userId: user.id},
-        });
-
-        if (!response?.success) {
-            return response;
-        }
-
-        setChatsList((prev) => prev?.filter((item) => item.id !== chat.id));
-
-        if (currentChat?.id === chat.id) {
-            setCurrentChat(null);
-            setMessagesList(null);
-            setMessagesWarning(null);
-        }
-
-        return response;
-    };
-
-    const createMessage = async ({event, chatId, senderId, message}) => {
-        event.preventDefault();
-
-        if (!message) {
-            return;
-        }
-
-        const response = await postRequest({
-            url: 'messages',
-            data: {chatId, senderId, message},
-        });
-
-        const {companionId} = currentChat;
-
-        setNewMessage({...response[response?.length - 1], companionId});
-        setMessagesList(response);
-    };
-
-    useEffect(() => {
-        // Сокет создаём только после входа: иначе сервер отклонит подключение без сессии.
-        if (!user) {
-            return;
-        }
-
-        const newSocket = io();
-        setSocket(newSocket);
-
-        return () => {
-            newSocket.disconnect();
-        };
-    }, [user]);
-
-    useEffect(() => {
-        if (!socket) {
-            return;
-        }
-
-        if (!user) {
-            return;
-        }
-
-        const {id: userId} = user;
-
-        // После разрыва соединения (экран заблокирован) socket.io переподключается с новым id,
-        // поэтому пользователя нужно зарегистрировать на сервере заново при каждом connect.
-        const registerUser = () => socket.emit('userConnect', userId);
-
-        registerUser();
-        socket.on('connect', registerUser);
-
-        socket.on('getOnlineUsers', (users) => {
-
-            setOnlineUsers(users);
-        });
-
-        return () => {
-            socket.off('connect', registerUser);
-            socket.off('getOnlineUsers');
-        };
-    }, [socket, user]);
-
-    // При возврате на вкладку (разблокировка телефона) переподключаем сокет и подгружаем открытый чат,
-    // чтобы сообщения, пришедшие пока экран был заблокирован, появились без обновления страницы.
-    useEffect(() => {
-        if (!socket || !user) {
-            return;
-        }
-
-        const syncOnResume = () => {
-            if (document.visibilityState !== 'visible') {
-                return;
-            }
-
-            if (!socket.connected) {
-                socket.connect();
-            }
-
-            if (currentChat) {
-                refreshChatMessages({chatId: currentChat.id});
-            }
-        };
-
-        socket.on('connect', syncOnResume);
-        document.addEventListener('visibilitychange', syncOnResume);
-
-        return () => {
-            socket.off('connect', syncOnResume);
-            document.removeEventListener('visibilitychange', syncOnResume);
-        };
-    }, [socket, user, currentChat]);
-
-    useEffect(() => {
-        if (!socket) {
-            return;
-        }
-
-        if (!user) {
-            return;
-        }
-
-        socket.emit('sendMessage', {...newMessage});
-
-    }, [newMessage, socket, user]);
-
-    useEffect(() => {
-        if (!socket) {
-            return;
-        }
-
-        if (!user) {
-            return;
-        }
-
-        socket.on('getMessage', (message) => {
-            // Обновляем последнее сообщение в списке чатов, даже если чат не открыт.
-            setChatsList((prev) => prev?.map((chat) => (
-                chat.id === message.chatId
-                    ? {...chat, lastMessage: message.message, messageDate: message.createDate}
-                    : chat
-            )));
-
-            // Чата ещё нет в списке (собеседник начал диалог) — подгружаем список с сервера.
-            if (chatsList && !chatsList.some((chat) => chat.id === message.chatId)) {
-                getRequest({url: `chats/${user.id}`}).then((list) => {
-                    if (Array.isArray(list)) {
-                        setChatsList(list);
-                    }
-                });
-            }
-
-            if (message.chatId !== currentChat?.id) {
-                setUnreadCounts((prev) => ({
-                    ...prev,
-                    [message.chatId]: (prev[message.chatId] || 0) + 1,
-                }));
-                return;
-            }
-
-            // Сразу показываем сообщение, затем сверяем список с БД.
-            setMessagesList((prev) => {
-                const list = Array.isArray(prev) ? prev : [];
-                return list.some((item) => item.id === message.id) ? list : [...list, message];
-            });
-            refreshChatMessages({chatId: message.chatId});
-        });
-
-        // Собеседник удалил чат: убираем его у себя и очищаем окно, если оно открыто.
-        socket.on('chatDeleted', ({chatId}) => {
-            setChatsList((prev) => prev?.filter((chat) => chat.id !== chatId));
-
-            if (currentChat?.id === chatId) {
-                setCurrentChat(null);
-                setMessagesList(null);
-                setMessagesWarning(null);
-            }
-        });
-
-        return () => {
-            socket.off('getMessage');
-            socket.off('chatDeleted');
-        };
-
-    }, [socket, currentChat, user, chatsList]);
-
+    const {unreadCounts, resetUnread, incrementUnread} = useUnreadCounts();
+
+    const {chatsList, setChatsList} = useChatsList({user, messagesList});
+
+    const {
+        currentChat,
+        setCurrentChat,
+        messagesWarning,
+        setMessagesWarning,
+        getChatMessages,
+        clearOpenChat,
+        refreshChatMessages,
+    } = useOpenChat({user, chatsList, setMessagesList, resetUnread});
+
+    const {startChat, deleteChat} = useChatActions({
+        user,
+        chatsList,
+        setChatsList,
+        currentChat,
+        getChatMessages,
+        clearOpenChat,
+    });
+
+    const {socket, onlineUsers} = useChatSocket({user});
+
+    useResumeSync({socket, user, currentChat, refreshChatMessages});
+
+    useIncomingMessages({
+        socket,
+        user,
+        chatsList,
+        setChatsList,
+        currentChat,
+        setMessagesList,
+        refreshChatMessages,
+        incrementUnread,
+        clearOpenChat,
+    });
+
+    const {createMessage} = useSendMessage({socket, user, currentChat, setMessagesList});
 
     return (
         <ChatContext.Provider value={{
