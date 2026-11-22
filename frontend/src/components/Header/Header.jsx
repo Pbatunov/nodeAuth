@@ -27,7 +27,7 @@ export const Header = () => {
             {userData && (
                 <div className={styles['header__user-name']}>
                     <AvatarUpload/>
-                    <span>Добро пожаловать, {userData?.name}! </span>
+                    <span>{userData?.name}</span>
                 </div>
             )}
 
