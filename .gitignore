@@ -1,5 +1,8 @@
 node_modules
 static/build
+
+# Секреты для docker-compose (шаблон: .env.example)
+.env
 # Загруженные пользователями аватарки
 backend/uploads
 .vscode
