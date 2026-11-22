@@ -13,8 +13,8 @@ export const useOpenChat = ({user, chatsList, setMessagesList, resetUnread}) => 
     // ID открытого чата хранится в адресе (/chat/:chatId), поэтому он переживает перезагрузку страницы.
     const routeChatId = pathname.match(/^\/chat\/([^/]+)$/)?.[1] ?? null;
 
-    // Загружает сообщения чата и делает его открытым. syncUrl — обновить адрес на /chat/:chatId.
-    const loadChat = useCallback(async ({chat, syncUrl}) => {
+    // Загружает сообщения чата и делает его открытым. Вызывается только из эффекта по адресу.
+    const loadChat = useCallback(async ({chat}) => {
         const chatMessagesList = await getRequest({url: `messages/${chat.id}`});
 
         if (Array.isArray(chatMessagesList)) {
@@ -32,14 +32,20 @@ export const useOpenChat = ({user, chatsList, setMessagesList, resetUnread}) => 
 
         setCurrentChat(chat);
         resetUnread(chat.id);
+    }, [resetUnread, setMessagesList]);
 
-        // navigate вызывается в той же задаче, что и setCurrentChat, поэтому React обновит их одним рендером.
-        if (syncUrl) {
+    // Открытие чата идёт через адрес: если он меняется, эффект ниже сам загрузит чат.
+    // Нельзя ставить currentChat напрямую — адрес обновляется позже (startTransition в react-router),
+    // и эффект успевал вернуть предыдущий чат, из-за чего окно переключалось туда-сюда.
+    const getChatMessages = useCallback(({chat}) => {
+        if (String(chat.id) !== routeChatId) {
             navigate(`/chat/${chat.id}`);
+            return;
         }
-    }, [navigate, resetUnread, setMessagesList]);
 
-    const getChatMessages = useCallback(({chat}) => loadChat({chat, syncUrl: true}), [loadChat]);
+        // Адрес уже указывает на этот чат (повторный клик) — перезагружаем сообщения сразу.
+        return loadChat({chat});
+    }, [navigate, routeChatId, loadChat]);
 
     // Закрывает открытый чат и очищает окно сообщений.
     const clearOpenChat = useCallback(() => {
@@ -70,7 +76,7 @@ export const useOpenChat = ({user, chatsList, setMessagesList, resetUnread}) => 
         const chatFromUrl = chatsList.find((chat) => String(chat.id) === routeChatId);
 
         if (chatFromUrl) {
-            loadChat({chat: chatFromUrl, syncUrl: false});
+            loadChat({chat: chatFromUrl});
         } else {
             // Чата нет (удалён или недоступен) — возвращаемся на главную.
             navigate('/', {replace: true});
