@@ -18,23 +18,6 @@
     background: #000;
   }
 
-  &__message-item {
-    background: magenta;
-    padding: 10px;
-    border-radius: 16px;
-    width: fit-content;
-
-    & + & {
-      margin-top: 15px;
-    }
-
-    &.right {
-      align-self: end;
-      background: #FFFFFF;
-      color: magenta;
-    }
-  }
-
   &__input-wrapper {
     position: relative;
     width: 100%;

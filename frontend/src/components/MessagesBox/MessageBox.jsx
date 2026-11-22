@@ -3,6 +3,7 @@ import {useContext, useRef, useState, useEffect} from 'react';
 import {ChatContext} from '../../context/ChatContext';
 import {AuthContext} from '../../context/AuthContext';
 import {ReactComponent as SendIcon} from './images/send-icon.svg';
+import {MessageItem} from '../MessageItem';
 
 const EMOJIS = ['😀', '😂', '😍', '😎', '🥰', '😢', '😡', '👍', '👎', '🙏', '🔥', '🎉', '❤️', '😉', '🤔', '😴', '👋', '💯'];
 
@@ -39,12 +40,14 @@ export const MessageBox = () => {
             <div className='message-box__list' ref={messagesListRef}>
                 {!messagesList?.length ?
                     <div className='message-box__warning'>{messagesWarning}</div> :
-                    messagesList?.map((item) => {
-
-                        const {id, senderId, message} = item;
-                        return <div key={id}
-                            className={`message-box__message-item ${senderId === userData.id ? 'right' : ''}`}>{message}</div>;
-                    })}
+                    messagesList?.map((item) => (
+                        <MessageItem
+                            key={item.id}
+                            message={item.message}
+                            createDate={item.createDate}
+                            isOwn={item.senderId === userData.id}
+                        />
+                    ))}
             </div>
 
             <form

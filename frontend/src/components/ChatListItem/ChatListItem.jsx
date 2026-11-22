@@ -105,7 +105,7 @@ export const ChatListItem = ({chat, isActive, unreadCount, handleClick}) => {
                 {lastMessage && <div className='chat-list-item__message'>{lastMessage}</div>}
             </div>
             {lastMessage && <div className='chat-list-item__meta'>
-                <div className='chat-list-item__time'>{formatDate(messageDate)}</div>
+                <time className='chat-list-item__time'>{formatDate(messageDate)}</time>
                 {unreadCount > 0 && <div className='chat-list-item__notification'>{unreadCount}</div>}
             </div>}
 

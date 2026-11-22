@@ -1,0 +1,31 @@
+.message-item {
+  background: magenta;
+  padding: 10px;
+  border-radius: 16px;
+  width: fit-content;
+  max-width: 100%;
+  overflow-wrap: anywhere;
+  gap: 5px;
+
+  & + & {
+    margin-top: 15px;
+  }
+
+  &__text {
+    display: inline;
+  }
+
+  &--own {
+    align-self: end;
+    background: #FFFFFF;
+    color: magenta;
+  }
+
+  &__meta {
+    display: inline-block;
+    margin-left: 5px;
+    font-size: 0.7em;
+    opacity: 0.8;
+    text-align: right;
+  }
+}
