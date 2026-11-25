@@ -1,66 +1,67 @@
 .new-chat {
+  display: flex;
+  flex-direction: column;
+  row-gap: 10px;
+  margin-bottom: 15px;
+  padding: 10px;
+  border: 1px solid magenta;
+  border-radius: 8px;
+  font-size: 0.9em;
+
+  &__form {
+    display: flex;
+    column-gap: 6px;
+  }
+
+  &__search {
+    flex: 1;
+    min-width: 0;
+    padding: 6px 8px;
+    border: none;
+    border-radius: 6px;
+  }
+
+  &__submit {
+    padding: 6px 10px;
+    border: none;
+    border-radius: 6px;
+    background-color: magenta;
+    color: white;
+    cursor: pointer;
+    width: auto;
+  }
+
+  &__login {
+    color: #b3e0e0;
+    font-size: 0.85em;
+  }
+
+  &__users {
     display: flex;
     flex-direction: column;
-    row-gap: 10px;
-    margin-bottom: 15px;
-    padding: 10px;
-    border: 1px solid magenta;
-    border-radius: 8px;
-    font-size: 0.9em;
+    row-gap: 6px;
+    max-height: 200px;
+    overflow: auto;
+    scrollbar-width: thin;
+    scrollbar-color: magenta transparent;
+  }
 
-    &__form {
-        display: flex;
-        column-gap: 6px;
+  &__user {
+    padding: 6px 8px;
+    border: none;
+    border-radius: 6px;
+    background: transparent;
+    color: white;
+    text-align: left;
+    cursor: pointer;
+
+    &:hover {
+      background-color: darkcyan;
     }
+  }
 
-    &__search {
-        flex: 1;
-        min-width: 0;
-        padding: 6px 8px;
-        border: none;
-        border-radius: 6px;
-    }
-
-    &__submit {
-        padding: 6px 10px;
-        border: none;
-        border-radius: 6px;
-        background-color: magenta;
-        color: white;
-        cursor: pointer;
-    }
-
-    &__login {
-        color: #b3e0e0;
-        font-size: 0.85em;
-    }
-
-    &__users {
-        display: flex;
-        flex-direction: column;
-        row-gap: 6px;
-        max-height: 200px;
-        overflow: auto;
-        scrollbar-width: thin;
-        scrollbar-color: magenta transparent;
-    }
-
-    &__user {
-        padding: 6px 8px;
-        border: none;
-        border-radius: 6px;
-        background: transparent;
-        color: white;
-        text-align: left;
-        cursor: pointer;
-
-        &:hover {
-            background-color: darkcyan;
-        }
-    }
-
-    &__empty,
-    &__message {
-        color: #ffb3b3;
-    }
+  &__empty,
+  &__message {
+    color: #ffb3b3;
+  }
 }
