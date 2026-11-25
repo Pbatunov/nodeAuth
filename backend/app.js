@@ -16,7 +16,22 @@ if (!process.env.SESSION_SECRET) {
     console.warn('SESSION_SECRET не задан: сессии сбросятся при перезапуске сервера');
 }
 
+// Сессии хранятся в MySQL, а не в памяти: переживают перезапуск и не текут по памяти.
+// Таблица sessions создаётся автоматически при первом запуске.
+const MySQLStore = require('express-mysql-session')(session);
+const sessionStore = new MySQLStore({
+    host: process.env.DB_HOST,
+    port: Number(process.env.DB_PORT) || 3306,
+    user: process.env.DB_USER,
+    password: process.env.DB_PASSWORD,
+    database: process.env.DB_NAME,
+    clearExpired: true,
+    checkExpirationInterval: 15 * 60 * 1000,
+    expiration: 1000 * 60 * 60 * 24 * 7,
+});
+
 const sessionMiddleware = session({
+    store: sessionStore,
     secret: process.env.SESSION_SECRET || crypto.randomBytes(32).toString('hex'),
     name: 'sid',
     resave: false,
@@ -75,16 +90,12 @@ io.on('connection', (socket) => {
             socketId: socket.id,
         });
 
-        console.log({onlineUsers});
-
         io.emit('getOnlineUsers', onlineUsers);
     });
 
     socket.on('sendMessage', (message) => {
         // Отправитель всегда тот, кто вошёл в сессии.
         const senderId = socket.request.session.userId;
-
-        console.log({message});
 
         const user = onlineUsers.find((user) => user.userId === message.companionId);
 
