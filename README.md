@@ -62,7 +62,7 @@ sequenceDiagram
 | `POST /api/users/auth`, `POST /api/users/registration` | публичный |
 | `POST /api/users/logout` | публичный |
 | `GET /api/users/me` | нужна сессия |
-| `GET /api/users` | нужна сессия |
+| `GET /api/users/search?login=` | нужна сессия; точное совпадение ника с учётом регистра, без списка всех пользователей |
 | `POST /api/chats` | нужна сессия; создатель — текущий пользователь |
 | `GET /api/chats/:userId` | `:userId` должен совпадать с сессией, иначе 403 |
 | `GET /api/chats/find/:a/:b` | текущий пользователь должен быть `a` или `b`, иначе 403 |

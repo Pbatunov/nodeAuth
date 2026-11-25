@@ -4,26 +4,44 @@ const logger = ({statusText, messageText}) => {
     console.log(`${statusText}: ${messageText}`);
 };
 
-// Отдаём только id и имя: логины и хэши паролей наружу не выходят.
-const findAllUsers = ({res}) => {
-    const findAllUsersCallback = ({connection}) => {
-        connection.query('SELECT id, name FROM test_users ORDER BY name', (error, result) => {
-            connection.end();
+// Поиск по нику (логину): только точное совпадение, с учётом регистра.
+// Список пользователей не отдаём, поэтому по запросам нельзя узнать остальных.
+// Пароль и createDate наружу не выходят. Сам пользователь в результаты не попадает.
+const LOGIN_MAX_LENGTH = 255;
 
-            if (error) {
-                logger({statusText: 'findAllUsersError', messageText: error.message});
-                return res.status(500).send([]);
-            }
+const searchUserByLogin = ({login, userId, res}) => {
+    const normalizedLogin = typeof login === 'string' ? login.trim() : '';
 
-            res.send(result);
-        });
+    if (!normalizedLogin || normalizedLogin.length > LOGIN_MAX_LENGTH) {
+        return res.status(400).send({success: false, message: 'Введите ник'});
+    }
+
+    const searchUserCallback = ({connection}) => {
+        connection.execute(
+            'SELECT id, name, login, avatar FROM test_users WHERE login COLLATE utf8mb4_bin = ? AND id <> ? LIMIT 1',
+            [normalizedLogin, userId],
+            (error, result) => {
+                connection.end();
+
+                if (error) {
+                    logger({statusText: 'searchUserByLoginError', messageText: error.message});
+                    return res.status(500).send({success: false});
+                }
+
+                if (!result.length) {
+                    return res.status(404).send({success: false, message: 'Пользователь не найден'});
+                }
+
+                res.send(result[0]);
+            },
+        );
     };
 
     dbConnection({
         logger,
         res,
-        callback: findAllUsersCallback,
-        from: 'findAllUsers',
+        callback: searchUserCallback,
+        from: 'searchUserByLogin',
     });
 };
 
@@ -58,4 +76,4 @@ const getCurrentUser = ({userId, res}) => {
     });
 };
 
-module.exports = {findAllUsers, getCurrentUser};
+module.exports = {searchUserByLogin, getCurrentUser};

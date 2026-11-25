@@ -4,7 +4,7 @@ const urlencodedParser = express.urlencoded({extended: true});
 const router = express.Router();
 const registration = require('../Controllers/registration/main');
 const auth = require('../Controllers/auth/main');
-const {findAllUsers, getCurrentUser} = require('../Controllers/users/main');
+const {searchUserByLogin, getCurrentUser} = require('../Controllers/users/main');
 const {updateAvatar} = require('../Controllers/users/avatar');
 const requireAuth = require('../middleware/requireAuth');
 
@@ -12,8 +12,9 @@ const AVATAR_MAX_SIZE = 2 * 1024 * 1024;
 // Файл приходит multipart-формой. abortOnLimit выключен, чтобы вернуть понятный ответ, а не пустой.
 const avatarUpload = fileUpload({limits: {fileSize: AVATAR_MAX_SIZE}, abortOnLimit: false});
 
-router.get('/', requireAuth, (req, res) => {
-    findAllUsers({res});
+// Поиск только по точному нику. Списка всех пользователей больше нет.
+router.get('/search', requireAuth, (req, res) => {
+    searchUserByLogin({login: req.query.login, userId: req.session.userId, res});
 });
 
 router.get('/me', requireAuth, (req, res) => {

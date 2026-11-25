@@ -8,10 +8,31 @@
     border-radius: 8px;
     font-size: 0.9em;
 
+    &__form {
+        display: flex;
+        column-gap: 6px;
+    }
+
     &__search {
+        flex: 1;
+        min-width: 0;
         padding: 6px 8px;
         border: none;
         border-radius: 6px;
+    }
+
+    &__submit {
+        padding: 6px 10px;
+        border: none;
+        border-radius: 6px;
+        background-color: magenta;
+        color: white;
+        cursor: pointer;
+    }
+
+    &__login {
+        color: #b3e0e0;
+        font-size: 0.85em;
     }
 
     &__users {
